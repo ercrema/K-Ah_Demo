@@ -10,6 +10,7 @@ library(cascsim)
 source(here('nimble_scripts','gpSIM.R'))
 
 # settings
+set.seed(123)
 n.locations <- 200
 n.samples <- 300
 perc_misclass <- 0.2
@@ -65,139 +66,11 @@ dates.d$p_y[i] <- dates.d$p_y[i] + runif(round(n.samples*perc_misclass),min=-0.3
 dates.d$p_y[which(dates.d$p_y<0)]=0
 dates.d$p_y[which(dates.d$p_y>1)]=1
 
-# Nimble Analyses ----
-# distmat <- as.matrix(dist(rbind(dates.d[,c('X','Y')],st_coordinates(pred.locations.centroid))))
-distmat <- as.matrix(dist(dates.d[,c('X','Y')]))
-distmat  <- distmat/1000
-dat <- list(y=dates.d$y)
-# constants <- list(z=c(dates.d$ash,predictions.d$ash),
-# 		  N = nrow(dates.d)+nrow(predictions.d),
-# 		  N1 = nrow(dates.d),
-# 		  dist_mat = distmat)
-constants <- list(z=c(dates.d$ash),
-		  N = nrow(dates.d),
-		  dist_mat = distmat)
-cov_ExpQ <- nimbleFunction(run = function(dists = double(2), rho = double(0), etasq = double(0),sigmasq = double(0)) 
-			   {
-				   returnType(double(2))
-				   n <- dim(dists)[1]
-				   result <- matrix(nrow = n, ncol = n, init = FALSE)
-				   deltaij <- matrix(nrow = n, ncol = n,init = TRUE)
-				   diag(deltaij) <- 1
-				   for(i in 1:n)
-					   for(j in 1:n)
-						   result[i, j] <- etasq*exp(-0.5*(dists[i,j]/rho)^2) + sigmasq*deltaij[i,j]
-					   return(result)
-				   })
-Ccov_ExpQ <- compileNimble(cov_ExpQ)
+# Compute distance matrices
+distmat.obs <- as.matrix(dist(dates.d[,c('X','Y')]))
+distmat.prediction <- as.matrix(dist(st_coordinates(pred.locations.centroid)))
+distmat.total <- as.matrix(dist(rbind(dates.d[,c('X','Y')],st_coordinates(pred.locations.centroid))))
 
-model1 <- nimbleCode({
-	for (i in 1:N)
-	{
-		# Assign probabilities
-		p[i]  <- 1/(1+(exp(-(gamma0 + gamma1 * z[i] + s[i]))))
-	        y[j] ~ dbern(p[j])
-		
-	}
-	# Spatial model
-	mu_s[1:N] <- 0
-	cov_s[1:N, 1:N] <- cov_ExpQ(dist_mat[1:N, 1:N], rho, etasq, 0.000001)
-	s[1:N] ~ dmnorm(mu_s[1:N], cov = cov_s[1:N, 1:N])
-
-	#Priors
-	gamma0 ~ dnorm(0,5)
-	gamma1 ~ dnorm(0,5)
-	etasq ~ dexp(20);
-	rho ~ T(dgamma(10,(10-1)/150),1,1350); #mode 150
-})
-
-model2 <- nimbleCode({
-	for (i in 1:N)
-	{
-		# Assign probabilities
-		p[i]  <- 1/(1+(exp(-(gamma0 + gamma1 * z[i] + s[i]))))
-		
-	}
-	for (j in 1:N1)
-	{
-		# Fi to data
-	        y[j] ~ dbern(p[j])
-	}
-
-	# Spatial model
-	mu_s[1:N] <- 0
-	cov_s[1:N, 1:N] <- cov_ExpQ(dist_mat[1:N, 1:N], rho, etasq, 0.000001)
-	s[1:N] ~ dmnorm(mu_s[1:N], cov = cov_s[1:N, 1:N])
-
-	#Priors
-	gamma0 ~ dnorm(0,5)
-	gamma1 ~ dnorm(0,5)
-	etasq ~ dexp(20);
-	rho ~ T(dgamma(10,(10-1)/150),1,1350); #mode 150
-})
-
-inits  <-  list()
-inits$gamma0 <- 0
-inits$gamma1 <- 0
-inits$rho  <- rtgamma(1,shape=10,scale=(10-1)/200,min=1,max=1350)
-inits$etasq  <- rexp(1,20)
-inits$s  <- rep(0,constants$N)
-inits$cov_s <- Ccov_ExpQ(constants$dist_mat, inits$rho, inits$etasq, 0.000001)
-inits$s <-  t(chol(inits$cov_s)) %*% rnorm(constants$N)
-inits$s <- inits$s[ , 1]  # so can give nimble a vector rather than one-column matrix
-
-
-model.gp <- nimbleModel(model2,constants = constants,data=dat,inits=inits)
-cModel.gp <- compileNimble(model.gp)
-conf.gp <- configureMCMC(model.gp)
-conf.gp$addMonitors('s')
-conf.gp$addMonitors('rho')
-conf.gp$addMonitors('etasq')
-conf.gp$removeSamplers('s[1:575]')
-conf.gp$removeSamplers('gamma0')
-# conf.gp$removeSamplers('gamma1')
-conf.gp$addSampler(c('gamma0','s[1:575]'), type='AF_slice') 
-MCMC.gp <- buildMCMC(conf.gp)
-cMCMC.gp <- compileNimble(MCMC.gp)
-results <- runMCMC(cMCMC.gp, nchain=1,niter = 200, thin=1, nburnin = 100,samplesAsCodaMCMC = T) 
-
-
-
-
-model.gp <- nimbleModel(model2,constants = constants,data=dat,inits=inits)
-cModel.gp <- compileNimble(model.gp)
-conf.gp <- configureMCMC(model.gp)
-conf.gp$addMonitors('s')
-conf.gp$addMonitors('rho')
-conf.gp$addMonitors('etasq')
-conf.gp$removeSamplers('s[1:575]')
-conf.gp$removeSamplers('gamma0')
-# conf.gp$removeSamplers('gamma1')
-conf.gp$addSampler(c('gamma0','s[1:575]'), type='AF_slice') 
-MCMC.gp <- buildMCMC(conf.gp)
-cMCMC.gp <- compileNimble(MCMC.gp)
-results <- runMCMC(cMCMC.gp, nchain=1,niter = 200, thin=1, nburnin = 100,samplesAsCodaMCMC = T) 
-
-
-
-
-
-
-# Prepare Data for Stan ----
-distmat <- as.matrix(dist(rbind(dates.d[,c('X','Y')],st_coordinates(pred.locations.centroid))))
-
-
-dat <- list(n = nrow(dates.d) + nrow(predictions.d),
-	    n1 = nrow(dates.d),#Number of Samples
-	    n2 = nrow(predictions.d), #Number of prediction locations
-	    x  = c(dates.d$ash,predictions.d$ash), #Predictors
-	    x2  = predictions.d$ash,  #Predictors (only predicted locations)
-	    y  = dates.d$y, #Binary responses
-	    dist  = distmat) # Distance Matrix (combined)
-
-model2 <- stan_model(here('stan_scripts','model2.stan'))
-fit2 <- sampling(model2,dat,iter=2000,chains=3)
-
-
-
+# Save Everything
+save(distmat.obs,distmat.prediction,distmat.total,dates.d,sites.d,pred.locations,file=here('testscripts','simdata.RData'))
 
