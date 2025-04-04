@@ -2,19 +2,23 @@ library(here)
 library(rstan)
 library(dplyr)
 library(sf)
-library(nimble)
 library(rnaturalearth)
-library(cascsim)
-# Code from https://aheblog.com/2016/12/07/geostatistical-modelling-with-r-and-stan/
 
-source(here('nimble_scripts','gpSIM.R'))
+# Compile GP simulation in Stan
+gpsim <- stan_model(here('stan_scripts','gpsim.stan'))
 
-# settings
+# sample settings
 set.seed(123)
 n.locations <- 200
 n.samples <- 300
 perc_misclass <- 0.2
 
+# parameters
+gamma0  <- -0.3
+gamma1  <- 1.6
+rho  <- 500
+alpha  <- 0.5
+sigma  <- 0.00001
 
 # generate random locations in the main islands of japan
 japan <- ne_countries(country = "Japan", returnclass = "sf",scale=10) |> st_transform(6684) |> st_geometry() |> st_cast('POLYGON') |> st_as_sf()
@@ -50,11 +54,19 @@ j <- inside_ellipse(x=predictions.d$X,y=predictions.d$Y,h=646610,k=652395,a=1000
 predictions.d$ash <- 0
 predictions.d$ash[j] <- 1
 
-# Simulate response
-res <- gpSim(x=sites.d$X,y=sites.d$Y,z=sites.d$ash,gamma0=-0.2,gamma1=1.2)
 
-# Combine to original
-sites.d <- left_join(sites.d,res,by=c('site.id'='ID'))
+# Simulate response
+simdat <- list(N = nrow(sites.d),
+	    coords = as.matrix(sites.d[,c('X','Y')]/1000),#convert in KM
+	    x = sites.d$ash,
+	    rho=rho,
+	    alpha=alpha,
+	    sigma=sigma,
+	    gamma0=gamma0,
+	    gamma1=gamma1)
+
+sim.out  <- sampling(gpsim,simdat,iter=1,warmup=0,chains=1,algorithm='Fixed_param') |> extract()
+sites.d$p <- plogis(as.numeric(sim.out$lambda))
 
 # Simulate binary dates 
 dates.d <- data.frame(site.id=c(1:n.locations,sample(n.locations,size=n.samples-n.locations,replace=T)))
@@ -66,11 +78,7 @@ dates.d$p_y[i] <- dates.d$p_y[i] + runif(round(n.samples*perc_misclass),min=-0.3
 dates.d$p_y[which(dates.d$p_y<0)]=0
 dates.d$p_y[which(dates.d$p_y>1)]=1
 
-# Compute distance matrices
-distmat.obs <- as.matrix(dist(dates.d[,c('X','Y')]))
-distmat.prediction <- as.matrix(dist(st_coordinates(pred.locations.centroid)))
-distmat.total <- as.matrix(dist(rbind(dates.d[,c('X','Y')],st_coordinates(pred.locations.centroid))))
 
 # Save Everything
-save(distmat.obs,distmat.prediction,distmat.total,dates.d,sites.d,predictions.d,pred.locations,file=here('testscripts','simdata.RData'))
+save(dates.d,sites.d,predictions.d,pred.locations,file=here('testscripts','simdata.RData'))
 
