@@ -72,5 +72,5 @@ distmat.prediction <- as.matrix(dist(st_coordinates(pred.locations.centroid)))
 distmat.total <- as.matrix(dist(rbind(dates.d[,c('X','Y')],st_coordinates(pred.locations.centroid))))
 
 # Save Everything
-save(distmat.obs,distmat.prediction,distmat.total,dates.d,sites.d,pred.locations,file=here('testscripts','simdata.RData'))
+save(distmat.obs,distmat.prediction,distmat.total,dates.d,sites.d,predictions.d,pred.locations,file=here('testscripts','simdata.RData'))
 
