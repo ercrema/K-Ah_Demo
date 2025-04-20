@@ -6,7 +6,6 @@ data {
  }
 
 transformed data {
-  vector[N] mu = rep_vector(0, N);
   real delta = 1e9;
 }
 
