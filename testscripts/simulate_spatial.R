@@ -1,6 +1,7 @@
 library(here)
 library(rstan)
 library(dplyr)
+library(ggplot2)
 library(sf)
 library(rnaturalearth)
 
@@ -8,7 +9,7 @@ library(rnaturalearth)
 gpsim <- stan_model(here('stan_scripts','gpsim.stan'))
 
 # sample settings
-set.seed(123)
+set.seed(1233)
 n.locations <- 200
 n.samples <- 300
 perc_misclass <- 0.2
@@ -16,8 +17,8 @@ perc_misclass <- 0.2
 # parameters
 gamma0  <- -0.3
 gamma1  <- 1.6
-rho  <- 500
-alpha  <- 0.5
+rho  <- 400 #km
+alpha  <- 0.8
 sigma  <- 0.00001
 
 # generate random locations in the main islands of japan
@@ -53,7 +54,8 @@ predictions.d <- as.data.frame(st_coordinates(pred.locations.centroid))
 j <- inside_ellipse(x=predictions.d$X,y=predictions.d$Y,h=646610,k=652395,a=1000*1000,b=150*1000,theta=35)
 predictions.d$ash <- 0
 predictions.d$ash[j] <- 1
-
+predictions.d$X  <- predictions.d$X/1000
+predictions.d$Y  <- predictions.d$Y/1000
 
 # Simulate response
 simdat <- list(N = nrow(sites.d),
@@ -67,6 +69,8 @@ simdat <- list(N = nrow(sites.d),
 
 sim.out  <- sampling(gpsim,simdat,iter=1,warmup=0,chains=1,algorithm='Fixed_param') |> extract()
 sites.d$p <- plogis(as.numeric(sim.out$lambda))
+sites.d$X  <- sites.d$X/1000
+sites.d$Y  <- sites.d$Y/1000
 
 # Simulate binary dates 
 dates.d <- data.frame(site.id=c(1:n.locations,sample(n.locations,size=n.samples-n.locations,replace=T)))
@@ -82,3 +86,5 @@ dates.d$p_y[which(dates.d$p_y>1)]=1
 # Save Everything
 save(dates.d,sites.d,predictions.d,pred.locations,file=here('testscripts','simdata.RData'))
 
+ggplot(sites.d,aes(x=X,y=Y,color=p)) +
+	geom_point()

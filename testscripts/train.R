@@ -51,8 +51,9 @@ cdplot(as.factor(y)~x)
 d <- data.frame(y=y,x=x)
 gamfit <- gam(y~s(x),data=d,family='binomial',method='REML')
 plot(gamfit)
-# using brms
-gamfit2 <- brm(y~gp(x),data=d,family=bernoulli(link='logit'),chains=4,cores=4)
+# using brms, ok speed
+gamfit2 <- brm(y~gp(x),data=d,family=bernoulli(link='logit'),chains=4,cores=4,niter=3000)
+gamfit2 <- brm(y~gp(x),data=d,family=bernoulli(link='logit'),chains=4,cores=4,control=list(adapt_delta=0.95,max_treedepth=15),niter=3000)
 
 
 # Much slower compared to Gaussian...
