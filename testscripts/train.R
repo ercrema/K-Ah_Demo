@@ -1,6 +1,7 @@
 library(here)
 library(rstan)
 library(mgcv)
+library(brms)
 
 # 1-D Gaussian Response ----
 mcycle <- MASS::mcycle
@@ -39,15 +40,27 @@ lines(seq(2,60,1),apply(posterior$f2,2,mean))
 
 
 # 1-D Binomial Response ----
-y.p  <- plogis(scale(y))
-plot(x,y.p)
-y <- rbinom(length(y),size=1,prob=y.p)
+# Generate sample data
+library(mgcv)
+gam_mod <- gam(accel ~ s(times), data = mcycle)
+gam.pred <- plogis(scale(predict(gam_mod)))
+x <- mcycle$times
+set.seed(123)
+y  <- rbinom(length(x),size=1,prob=gam.pred)
 cdplot(as.factor(y)~x)
+d <- data.frame(y=y,x=x)
+gamfit <- gam(y~s(x),data=d,family='binomial',method='REML')
+plot(gamfit)
+# using brms
+gamfit2 <- brm(y~gp(x),data=d,family=bernoulli(link='logit'),chains=4,cores=4)
 
-# Much slower... (with no prediction!).
+
+# Much slower compared to Gaussian...
 gp4 <- stan_model(here('stan_scripts','gpinfer1D_binom.stan'))
-fit4 <- sampling(gp4,list(N=length(x),D=1,x=matrix(x,ncol=1),y=y),iter=300,chains=3,cores=3)
+fit4 <- sampling(gp4,list(N=length(x),D=1,x=matrix(x,ncol=1),y=y),iter=2000,chains=4,cores=4)
 posterior  <-  extract(fit4)
+
+
 
 
 # Making predictions (runing but possibly biased)
