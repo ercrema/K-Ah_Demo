@@ -9,16 +9,16 @@ library(rnaturalearth)
 gpsim <- stan_model(here('stan_scripts','gpsim.stan'))
 
 # sample settings
-set.seed(1233)
+set.seed(1233442)
 n.locations <- 200
 n.samples <- 300
 perc_misclass <- 0.2
 
 # parameters
 gamma0  <- -0.3
-gamma1  <- 1.6
-rho  <- 400 #km
-alpha  <- 0.8
+gamma1  <- 1.2
+rho  <- 100 #km
+alpha  <- 10
 sigma  <- 0.00001
 
 # generate random locations in the main islands of japan
@@ -83,8 +83,11 @@ dates.d$p_y[which(dates.d$p_y<0)]=0
 dates.d$p_y[which(dates.d$p_y>1)]=1
 
 
-# Save Everything
-save(dates.d,sites.d,predictions.d,pred.locations,file=here('testscripts','simdata.RData'))
 
 ggplot(sites.d,aes(x=X,y=Y,color=p)) +
 	geom_point()
+par(mfrow=c(1,2))
+cdplot(as.factor(y)~X,data=dates.d)
+cdplot(as.factor(y)~Y,data=dates.d)
+# Save Everything
+save(dates.d,sites.d,predictions.d,pred.locations,file=here('testscripts','simdata.RData'))
