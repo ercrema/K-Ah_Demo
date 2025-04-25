@@ -28,7 +28,7 @@ model {
     L_K = cholesky_decompose(K);
     f = L_K * eta;
   }
-  rho ~ inv_gamma(5, 5);
+  rho ~ inv_gamma(5, 20);
   alpha ~ std_normal();
   eta ~ std_normal();
   gamma0 ~ std_normal();

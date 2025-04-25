@@ -6,6 +6,7 @@ library(nimble)
 library(rnaturalearth)
 library(cascsim)
 library(ggplot2)
+library(gridExtra)
 library(brms)
 
 # Load Data ----
@@ -15,9 +16,44 @@ load(here('testscripts','simdata.RData'))
 priors <- prior(normal(0, 1), class = "Intercept") + 
 	prior(normal(0,1),class='b') + 
 	prior(inv_gamma(6, 2000), class = "lscale", coef = "gpXY") +
-	prior(normal(0, 0.25), class = "sdgp", coef='gpXY')
+	prior(exponential(0.1), class = "sdgp", coef='gpXY')
+
+dates.d$ash  <- as.factor(dates.d$ash)
 
 fitted.model <- brm(y ~ ash + gp(X,Y), family=bernoulli(link='logit'),data=dates.d,cores=4,chains=4, prior=priors,control=list(adapt_delta=0.99))
+p <- predict(fitted.model)
+
+g1 <- ggplot(sites.d,aes(x=X,y=Y,color=p)) +
+	geom_point() +
+	ggtitle('True') +
+	scale_color_continuous(limits=c(0,1))
+
+
+dates.d.pred <- dates.d
+dates.d.pred$p <- p[,1]
+
+g2 <- ggplot(dates.d.pred,aes(x=X,y=Y,color=p)) +
+	geom_point() +
+	ggtitle('Predicted')+
+	scale_color_continuous(limits=c(0,1))
+grid.arrange(g1,g2)
+
+cond <- conditional_effects(fitted.model)
+
+priors <- prior(normal(0, 1), class = "Intercept") + 
+	prior(inv_gamma(6, 2000), class = "lscale", coef = "gpXY") +
+	prior(normal(0, 0.25), class = "sdgp", coef='gpXY')
+
+fitted.mode2 <- brm(y ~ gp(X,Y), family=bernoulli(link='logit'),data=dates.d,cores=4,chains=4, prior=priors,control=list(adapt_delta=0.99))
+predict(fitted.mode2)
+
+cond <- conditional_effects(fitted.mode2)
+
+pred <- predict(fitted.model,newdata=predictions.d)
+cond <- 
+
+
+
 post <- as_draws_matrix(fitted.model)
 
 

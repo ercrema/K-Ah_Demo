@@ -2,6 +2,7 @@ library(here)
 library(rstan)
 library(mgcv)
 library(brms)
+library(MCMCpack)
 
 # 1-D Gaussian Response ----
 mcycle <- MASS::mcycle
@@ -41,7 +42,7 @@ lines(seq(2,60,1),apply(posterior$f2,2,mean))
 
 # 1-D Binomial Response ----
 # Generate sample data
-library(mgcv)
+mcycle <- MASS::mcycle
 gam_mod <- gam(accel ~ s(times), data = mcycle)
 gam.pred <- plogis(scale(predict(gam_mod)))
 x <- mcycle$times
@@ -50,9 +51,22 @@ y  <- rbinom(length(x),size=1,prob=gam.pred)
 cdplot(as.factor(y)~x)
 d <- data.frame(y=y,x=x)
 gamfit <- gam(y~s(x),data=d,family='binomial',method='REML')
-plot(gamfit)
+plot(gamfit,seWithMean=T,trans=plogis)
 # using brms, ok speed
-gamfit2 <- brm(y~gp(x),data=d,family=bernoulli(link='logit'),chains=4,cores=4,niter=3000)
+priors <- prior(normal(0, 1), class = "Intercept") + 
+	prior(inv_gamma(4, 50), class = "lscale", coef = "gpx") +
+	prior(exponential(1), class = "sdgp", coef='gpx')
+
+gpfit <- brm(y~gp(x),data=d,family=bernoulli(link='logit'),prior=priors,cores=4,control=list(adapt_delta=0.99))
+gpfit2 <- brm(y~gp(x),data=d,family=bernoulli(link='logit'),cores=4,control=list(adapt_delta=0.99))
+predfit <- predict(gpfit)
+cond <- conditional_effects(gpfit)
+plot(cond)
+
+
+
+
+
 gamfit2 <- brm(y~gp(x),data=d,family=bernoulli(link='logit'),chains=4,cores=4,control=list(adapt_delta=0.95,max_treedepth=15),niter=3000)
 
 
