@@ -1,6 +1,10 @@
 # Load Library ----
 library(here)
 library(rcarbon)
+library(nimbleCarbon)
+library(rnaturalearth)
+library(spdep)
+library(sf)
 
 # Filter Parameters ----
 # From https://doi.org/10.1016/j.quascirev.2013.01.026
@@ -10,6 +14,23 @@ delta <- 750
 lower <- delta0+delta
 upper <- delta0-delta
 binsize <- 100
+hexgridsize  <- 100000 #100km
+buffer <- 1000 #5km coastal
+
+# Prepare hexgrid ----
+japan <- ne_countries(country = "Japan", returnclass = "sf",scale=10) |> st_transform(6684) |> st_geometry() |> st_cast('POLYGON') |> st_as_sf()
+japan$area <- st_area(japan)
+japan <- arrange(japan,desc(area)) |> slice_head(n = 4) |> st_geometry()
+japan  <-  japan |> st_make_valid() |> st_union()
+japan.buffer  <- st_buffer(japan,buffer)
+hexgrid <- st_make_grid(japan,cellsize=hexgridsize,square=FALSE)
+hexgrid <- st_filter(st_as_sf(hexgrid),st_as_sf(japan.buffer),.predicate=st_intersects)
+hexgrid <- hexgrid |> rename(geometry=x) |> mutate(hexid = row_number(),centroid = st_centroid(hexgrid))
+# make a clipped version for plotting purposes
+hexgrid_plot <- st_intersection(hexgrid,japan)
+# extract neighbourhood data
+nb_areas <- poly2nb(sf::as_Spatial(hexgrid), queen=FALSE, row.names = hexgrid$area_ID) #neighboring areas using sp library 
+nbInfo <- nb2WB(nb_areas) #transform into iCAR inputs: adjacent matrix, weights, number of neighbors (for WinBUGS)
 
 # Read 14C dates ----
 # Read Rekihaku Radiocarbon Database, English Curated Version, v.1.2.0 from https://github.com/ercrema/japan_c14db
@@ -17,10 +38,30 @@ d <- readRDS(url('https://github.com/ercrema/japan_c14db/raw/refs/heads/master/o
 
 # Preprocessing & Filtering ----
 # Exclude sites with no coordinates
-d <- subset(d,!is.na(Latitude)&!is.na(Longitude))
+d <- subset(d,!is.na(Latitude)&!is.na(Longitude)&Prefecture!='Okinawa')
 # Aggregate sites based on proximity/dbscan
 source(url('https://github.com/ercrema/yayoi_demo/raw/refs/heads/main/src/dbscanID.R'))
-d$SiteID  <- dbscanID(sitename=d$SiteNameEn,longitude = d$Longitude,latitude = d$Latitude,eps=100)
+d$SiteID  <- dbscanID(sitename=d$SiteNameEn,longitude = d$Longitude,latitude = d$Latitude,eps=100) #Assign temporary SiteID
+# Compute average coordinate per site cluster
+d$cLongitude <- d$cLatitude <- NA
+
+for (i in 1:max(d$SiteID))
+{
+	tmp <- subset(d,SiteID==i)
+	j <- which(d$SiteID==i)
+	tmp2 <- select(tmp,SiteNameEn,Longitude,Latitude) |> unique()
+	d$cLongitude[j] <- mean(tmp2$Longitude)
+	d$cLatitude[j] <- mean(tmp2$Latitude)
+	if(length(unique(tmp$SiteNameEn))>1){print(i)}
+}
+
+# Extract Easting and Northing
+sf_points_d <- st_as_sf(d, coords = c("cLongitude", "cLatitude"), crs = 4326)
+sf_points_d_trans <- st_transform(sf_points_d,crs=6684)
+coords <- st_coordinates(sf_points_d_trans)
+d$Easting  <- coords[,'X']
+d$Northing <- coords[,'Y']
+
 # Handle Dates
 d$C14Age = d$UnroundedCRA
 i = which(is.na(d$C14Age))
@@ -41,30 +82,54 @@ cald <- cald[i]
 bins <- binPrep(ages=cald,h=binsize,sites=d$SiteID)
 j <- thinDates(ages=d$C14Age,errors=d$C14Error,bins=bins,size=1,thresh=1,seed=123)
 d <- d[j,]
-cald <- cald[j]
-# Compute probability mass before delta0
-d$p_before <- apply(cald$calmatrix[1:which(rownames(cald$calmatrix)==as.character(delta0)),],2,sum)
-# Extract Center point for each SiteID
-SiteIDUniques <- unique(d$SiteID)
-d$Latitude2 <- NA
-d$Longitude2 <- NA
-for (k in SiteIDUniques)
-{
-	tmp.i <- which(d$SiteID==k)
-	lats  <- mean(unique(d$Latitude[tmp.i]))
-	longs <- mean(unique(d$Longitude[tmp.i]))
-	d$Latitude2[tmp.i] <- lats
-	d$Longitude2[tmp.i] <- longs
-}
 
-# Extract Ash Levels from Raster File
-d$ash <- NA
+# Filter to Sites located within japan_buffer
+i <- which(st_within(st_as_sf(d,coords=c('Easting','Northing'),crs=6684),japan.buffer,sparse=FALSE))
+d <- d[i,]
+
+# Rename SiteID 
+d$SiteID <- as.numeric(as.factor(d$SiteID))
+
+# Separate Site Table and Date Table ----
+sites.df <- select(d,SiteID,Easting,Northing) |> unique() |> arrange(SiteID)
+dates.df <- select(d,SiteID,C14Age,C14Error)
+dates.df$ID <- 1:nrow(dates.df)
+# Extract hexid from sites
+sites.df$hexid <- st_join(st_as_sf(sites.df,coords=c('Easting','Northing'),crs=6684),hexgrid)$hexid
+# Join Table to dates.df
+dates.df <- left_join(dates.df,sites.df)
+
+# Extract Ash Data ----
 # <to do>
 
-#
+# Define Lists for nimble analyses ----
+data(intcal20)
+dat <- list()
+dat$cra <- dates.df$C14Age
+dat$cra.error <- dates.df$C14Error
 
+constants <- list()
+constants$N  <- nrow(dates.df) #Number of Dates
+constants$id.hex <- dates.df$hexid #hexid of each sample
+constants$n.hex  <- max(hexgrid$hexid) #number of hex grid
+#adjacency info for icar
+constants$adj  <- nbInfo$adj
+constants$weights <- nbInfo$weights
+constants$num <- nbInfo$num
+constants$L <- length(nbInfo$adj)
+#calibration vectors
+constants$calBP <- intcal20$CalBP
+constants$C14BP <- intcal20$C14Age
+constants$C14err <- intcal20$C14Age.sigma
+#fixed parameters
+constants$a  <- lower
+constants$b  <- upper
+constants$delta0 <- delta0
 
+mcal <- medCal(calibrate(dat$cra,dat$cra.error))
+mcal <- ifelse(mcal>=lower,lower-1,mcal)
+mcal <- ifelse(mcal<=upper,upper+1,mcal)
+theta.init <- mcal
 
-
-
-
+# Save everying into an R image file ----
+save(dat,constants,sites.df,dates.df,hexgrid,hexgrid_plot,theta.init,file=here('01_dataprep_out.RData'))
