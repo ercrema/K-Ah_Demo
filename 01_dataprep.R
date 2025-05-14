@@ -25,6 +25,7 @@ k.ah.coord  <- c(130.308,30.789)
 
 # Read ashfall data ----
 tephra  <- rast(here('data','K_Ah_SUM.tif'))
+tephra.4326 <- project(tephra,'EPSG:4326')
 
 # Prepare hexgrid ----
 japan <- ne_countries(country = "Japan", returnclass = "sf",scale=10) |> st_transform(6684) |> st_geometry() |> st_cast('POLYGON') |> st_as_sf()
@@ -40,7 +41,7 @@ hexgrid <- hexgrid |> rename(geometry=x) |> mutate(hexid = row_number(),centroid
 hexgrid_plot <- st_intersection(hexgrid,japan)
 # extract ashfall data
 hexgrid.latlong.vect <- st_transform(hexgrid,4326) |> vect()
-avg.tephra  <- extract(tephra,hexgrid.latlong.vect,fun=mean,na.rm=TRUE)
+avg.tephra  <- extract(tephra.4326,hexgrid.latlong.vect,fun=mean,na.rm=TRUE)
 hexgrid$ash <- avg.tephra[,2]
 
 # extract neighbourhood data
