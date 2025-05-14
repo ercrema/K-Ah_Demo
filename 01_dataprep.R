@@ -6,6 +6,7 @@ library(rnaturalearth)
 library(spdep)
 library(sf)
 library(terra)
+library(dplyr)
 
 # Filter Parameters ----
 # From https://doi.org/10.1016/j.quascirev.2013.01.026
