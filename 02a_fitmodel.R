@@ -12,8 +12,8 @@ run <- function(seed,d,constants,theta.init,nburnin,niter,thin)
 	icarmodel  <- nimbleCode({
 		for (i in 1:N)
 		{
-			theta[i] ~ dDoubleExponentialGrowth(a=a,b=b,r1=s1[id.hex[i]],r2=s2[id.hex[i]],mu=delta0)
-# 	   	        theta[i] ~ dDoubleExponentialGrowth(a=a,b=b,r1=s1[id.hex[i]],r2=s2[id.hex[i]] + beta0 * ash[id.hex[i]],mu=delta0)
+# 			theta[i] ~ dDoubleExponentialGrowth(a=a,b=b,r1=s1[id.hex[i]],r2=s2[id.hex[i]],mu=delta0)
+ 	   	        theta[i] ~ dDoubleExponentialGrowth(a=a,b=b,r1=s1[id.hex[i]],r2=s2[id.hex[i]] + beta1 * ash[id.hex[i]],mu=delta0)
 			c14age[i] <- interpLin(z=theta[i], x=calBP[], y=C14BP[]);
 			sigmaCurve[i] <- interpLin(z=theta[i], x=calBP[], y=C14err[]);
 			sigmaDate[i] <- (cra.error[i]^2+sigmaCurve[i]^2)^(1/2);
@@ -29,7 +29,7 @@ run <- function(seed,d,constants,theta.init,nburnin,niter,thin)
 		sigma2 ~ dunif(0,100)
 
 		# Ash Prior
-# 		beta1 ~ dnorm(0,0.01) # effect of ash
+ 		beta1 ~ dnorm(0,0.0001) # effect of ash
 	})
 
 	#Setup Init
@@ -39,13 +39,12 @@ run <- function(seed,d,constants,theta.init,nburnin,niter,thin)
 	inits$sigma2 <- runif(1,0,100)
 	inits$s1 <- rnorm(constants$n.hex,mean=0,sd=0.001)
 	inits$s2 <- rnorm(constants$n.hex,mean=0,sd=0.001)
-# 	inits$beta1 <- rnorm(1,0,0.01)
+	inits$beta1 <- rnorm(1,0,0.0001)
 
 	#MCMC
 	model <- nimbleModel(icarmodel,constants=constants,data=d,inits=inits)
 	cModel <- compileNimble(model)
-	conf <- configureMCMC(model,monitors=c('s1','s2','sigma1','sigma2'))
-# 	conf <- configureMCMC(model,monitors=c('s1','s2','sigma1','sigma2','beta1'))
+	conf <- configureMCMC(model,monitors=c('s1','s2','sigma1','sigma2','beta1'))
 	MCMC <- buildMCMC(conf)
 	cMCMC <- compileNimble(MCMC,project=cModel)
 	samples <- runMCMC(cMCMC,niter=niter,thin=thin,nburnin=nburnin,samplesAsCodaMCMC=T,setSeed=seed)
@@ -56,16 +55,17 @@ run <- function(seed,d,constants,theta.init,nburnin,niter,thin)
 ncores <- 4
 cl <- makeCluster(ncores)
 seeds <- c(1,2,3,4)
-niter <- 250000
-nburnin <- 125000
-thin <- 5
+niter <- 800000
+nburnin <- 400000
+thin <- 80
 
-out  <- parLapply(cl = cl, X = seeds, fun = run, d = dat, constants = constants, theta.init = theta.init, niter = niter, nburnin = nburnin, thin = thin)  
-stopCluster()
+out  <- parLapply(cl = cl, X = seeds, fun = run, d = dat.icar, constants = constants.icar, theta.init = theta.init.icar, niter = niter, nburnin = nburnin, thin = thin)  
+stopCluster(cl)
 
 # Post-process and save ----
 samples  <- coda::mcmc.list(out)
-rhats <- coda::gelman.diag(samples)
-ess  <- coda::effectiveSize(samples)
-posterior <- do.call(rbind.data.frame,samples)
-save(posterior,rhats,ess,here('02_fitmodel_out.RData'))
+rhats.a <- coda::gelman.diag(samples)
+if(any(rhats.a[[1]][,1]>1.01)){rhats.a[[1]][which(rhats.a[[1]][,1]>1.01),1]}
+ess.a  <- coda::effectiveSize(samples)
+posterior.a <- do.call(rbind.data.frame,samples)
+save(posterior.a,rhats.a,ess.a,file=here('results','02a_fitmodel_out.RData'))

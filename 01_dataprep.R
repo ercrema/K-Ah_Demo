@@ -21,7 +21,6 @@ buffer <- 1000 #1km coastal buffer
 ash.threshold  <- 200 #200 mm
 max.buffer  <- 750*1000 #750km buffer for eastern edge
 k.ah.coord  <- c(130.308,30.789)
-# east.long.threshold  <- 1150000 #Use distance from Eruption point instead?
 
 # Read ashfall data ----
 tephra  <- rast(here('data','K_Ah_SUM.tif'))
@@ -47,23 +46,6 @@ hexgrid$ash <- avg.tephra[,2]
 # extract neighbourhood data
 nb_areas <- poly2nb(sf::as_Spatial(hexgrid), queen=FALSE, row.names = hexgrid$area_ID) #neighboring areas using sp library 
 nbInfo <- nb2WB(nb_areas) #transform into iCAR inputs: adjacent matrix, weights, number of neighbors (for WinBUGS)
-
-
-## Create a subregion based on ash fall threshold
-# Extract contour for pre-defined ashfall
-cont <- as.contour(tephra,levels=ash.threshold) |> st_as_sf() |> st_transform(6684) |> st_cast('POLYGON')
-k.ah.location  <- st_sfc(st_point(c(k.ah.coord)),crs=4326) |> st_transform(6684)
-k.ah.buffer <- st_buffer(k.ah.location,dist=max.buffer) |> st_cast('MULTIPOLYGON')
-
-# Create binary value
-japan.sub <- st_intersection(japan.buffer,k.ah.buffer)
-overlap <- st_intersection(japan.sub,cont) |> st_as_sf()
-overlap$z <- 1
-dif <- st_difference(japan.sub,st_union(cont)) |> st_cast('MULTIPOLYGON') |> st_as_sf()
-dif$z <- 0
-japan.sub.sf <- rbind(overlap,dif)
-
-
 
 # Read 14C dates ----
 # Read Rekihaku Radiocarbon Database, English Curated Version, v.1.2.0 from https://github.com/ercrema/japan_c14db
@@ -128,8 +110,6 @@ dates.df <- select(d,SiteID,C14Age,C14Error)
 dates.df$ID <- 1:nrow(dates.df)
 # Extract hexid from sites
 sites.df$hexid <- st_join(st_as_sf(sites.df,coords=c('Easting','Northing'),crs=6684),hexgrid)$hexid
-# Extract z from sites
-sites.df$z <- st_join(st_as_sf(sites.df,coords=c('Easting','Northing'),crs=6684),japan.sub.sf)$z
 # Join Table to dates.df
 dates.df <- left_join(dates.df,sites.df)
 
@@ -166,29 +146,6 @@ mcal <- ifelse(mcal>=lower,lower-1,mcal)
 mcal <- ifelse(mcal<=upper,upper+1,mcal)
 theta.init.icar <- mcal
 
-# Two region comparison 
-dates.df2 <- subset(dates.df,!is.na(z))
-
-dat.two <- list()
-dat.two$cra <- dates.df2$C14Age
-dat.two$cra.error <- dates.df2$C14Error
-
-constants.two <- list()
-constants.two$N  <- nrow(dates.df2) #Number of Dates
-constants.two$z <- dates.df2$z
-#calibration vectors
-constants.two$calBP <- intcal20$CalBP
-constants.two$C14BP <- intcal20$C14Age
-constants.two$C14err <- intcal20$C14Age.sigma
-#fixed parameters
-constants.two$a  <- lower
-constants.two$b  <- upper
-constants.two$delta0 <- delta0
-
-mcal <- medCal(calibrate(dat.two$cra,dat.two$cra.error))
-mcal <- ifelse(mcal>=lower,lower-1,mcal)
-mcal <- ifelse(mcal<=upper,upper+1,mcal)
-theta.init.two <- mcal
 
 # Save everying into an R image file ----
-save(dat.icar,dat.two,constants.icar,constants.two,theta.init.icar,theta.init.two,sites.df,dates.df,hexgrid,hexgrid_plot,file=here('01_dataprep_out.RData'))
+save(dat.icar,constants.icar,theta.init.icar,sites.df,dates.df,hexgrid,hexgrid_plot,file=here('01_dataprep_out.RData'))
