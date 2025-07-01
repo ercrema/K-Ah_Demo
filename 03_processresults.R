@@ -43,20 +43,6 @@ post.eta$p_lo90 <- apply(eta.matrix,2,function(x){HPDinterval(mcmc(x),prob=0.9)[
 post.eta$p_hi90 <- apply(eta.matrix,2,function(x){HPDinterval(mcmc(x),prob=0.9)[2]}) 
 minmax.eta  <- range(c(post.eta$p_lo90,post.eta$p_hi90))
 
-# Model C
-post.r <- data.frame(par=c('r1','r1','r2','r2'),z=c(0,1,0,1)) 
-r.matrix <- cbind(posterior.c[,'beta1'], posterior.c[,'beta1'] + posterior.c[,'eta1'],posterior.c[,'beta2'],posterior.c[,'beta2']+posterior.c[,'eta2'])
-post.r$p_mean <- apply(r.matrix,2,mean) 
-post.r$p_lo90 <- apply(r.matrix,2,function(x){HPDinterval(mcmc(x),prob=0.9)[1]}) 
-post.r$p_hi90 <- apply(r.matrix,2,function(x){HPDinterval(mcmc(x),prob=0.9)[2]}) 
-
-# Model D
-post.beta <- data.frame(par=c('beta0','beta1'))
-post.beta$p_mean <- c(mean(posterior.d[,'beta0']),mean(posterior.d[,'beta1']))
-post.beta$p_lo90 <- c(HPDinterval(mcmc(posterior.d[,'beta0']),prob=0.9)[1],HPDinterval(mcmc(posterior.d[,'beta1']),prob=0.9)[1])
-post.beta$p_hi90 <- c(HPDinterval(mcmc(posterior.d[,'beta0']),prob=0.9)[2],HPDinterval(mcmc(posterior.d[,'beta1']),prob=0.9)[2])
-											    
-
 
 # Map Figure Preparation ----
 
@@ -80,15 +66,6 @@ r2_hexgrid <- left_join(hexgrid_plot,post.r2)
 delta_hexgrid <- left_join(hexgrid_plot,post.delta)
 eta_hexgrid  <- left_join(hexgrid_plot,post.eta)
 
-
-# ggplot(st_geometry(win)) +
-# 	geom_sf(fill='darkgrey',colour='darkgrey') +
-# 	geom_sf(data=hexgrid_plot,alpha=0.7)+
-# 	geom_sf_label(data=hexgrid_plot,aes(label=hexid)) +
-# #       geom_contour(data=tephra,aes(x=x,y=y,z=value),linetype='dashed',breaks=200,color='black') +
-# 	coord_sf(xlim=c(129.5,145),ylim=c(31,45.8))
-
-# binary field to determine whether a given grid has or does not have any sites
 mt <- st_intersects(hexgrid_plot,st_as_sf(sites.df,coords=c('Easting','Northing'),crs=6684))
 eta_hexgrid$obs <- delta_hexgrid$obs <- r1_hexgrid$obs <- r2_hexgrid$obs <- lengths(mt) > 0
 
@@ -112,19 +89,6 @@ hexgrid_plot$ash <- hexgrid$ash
 # Make Figures ----
 
 # Sample Distribution Map ----
-# sample_map <- ggplot(st_geometry(win)) +
-# 	geom_sf(fill='darkgrey',colour='darkgrey') +
-# 	geom_sf(data=st_geometry(sites),size=0.8) +
-# 	geom_sf(data=st_geometry(hexgrid_plot),fill=NA,colour='lightgrey')+
-# 	geom_contour(data=tephra,aes(x=x,y=y,z=value,linetype=factor(..level..)),breaks=c(100,200,500),color='black') +
-# scale_linetype_manual(values=c('dotted','dashed','solid')) +
-# 	coord_sf(xlim=c(129.5,145),ylim=c(31,45.8)) +
-# 	annotate('point',x=130.308,y=30.789,color='red',size=3,shape=17) +
-# 	annotate('text',x=132,y=31,label='Kikai \n Caldera') +
-# 	labs(x='Longitude',y='Laitude',linetype='Deposit Thickness (mm)') +
-# 	theme(legend.position='inside',legend.position.inside=c(0.3,0.6))
-
-
 sample_map <- ggplot(st_geometry(win)) +
 	geom_sf(fill='darkgrey',colour='darkgrey') +
 	geom_sf(data=hexgrid_plot,aes(fill=ash),color='white',alpha=0.7)+
@@ -146,8 +110,20 @@ sample_map <- ggplot(st_geometry(win)) +
 	labs(x='Longitude',y='Laitude',fill='Average Deposit \nThickness (mm)') +
 	theme(legend.position='inside',legend.position.inside=c(0.2,0.75),legend.background=element_rect(fill=alpha('white',0.5)),legend.key.size=unit(0.2,'in'),legend.text=element_text(size=5.5),legend.title=element_text(size=7))
 
-ggsave(here('figures','sample_map.pdf'),plot=sample_map,width=4,height=4)
+ggsave(here('figures_and_tables','sample_map.pdf'),plot=sample_map,width=4,height=4)
 
+# K-Akahoya Ashfall model ----
+ashfall_model_raw <- ggplot(st_geometry(win)) +
+	geom_sf(fill='darkgrey',colour='darkgrey') +
+	geom_contour_filled(data=tephra,aes(x=x,y=y,z=value),alpha=0.5,breaks=c(0,150,300,500,1000,1500,2000,2500,3000)) +
+	scale_fill_viridis_d(option='turbo') +
+	coord_sf(xlim=c(129.5,145),ylim=c(31,45.8)) +
+	annotate('point',x=130.308,y=30.789,fill='red',size=2,shape=24) +
+	annotate('text',x=133.5,y=30.9,label='Kikai Caldera',size=3) +
+	labs(fill='Tephra thickness (in mm)') +
+	theme(legend.position='inside',legend.position.inside=c(0.25,0.75),legend.background=element_rect(fill=alpha('white',0.5)),legend.key.size=unit(0.15,'in'),legend.text=element_text(size=5),legend.title=element_text(size=6))
+
+ggsave(here('figures_and_tables','ashfall_model_raw.pdf'),plot=ashfall_model_raw,width=4,height=4)
 
 # r1 posterior model A ----
 
@@ -185,9 +161,7 @@ r1plot.hi <- ggplot(st_geometry(win)) +
 
 r1plot <- grid.arrange(r1plot.main,r1plot.lo,r1plot.hi,layout_matrix = rbind(c(1,2),c(1,3)),widths=c(2,1),heights=c(1,1),padding=unit(0.2,'cm'))
 
-ggsave(here('figures','r1_icar_post.pdf'),plot=r1plot,width=7,height=5)
-
-
+ggsave(here('figures_and_tables','posterior_r1.pdf'),plot=r1plot,width=7,height=5)
 
 # r2 posterior model A ----
 
@@ -224,7 +198,7 @@ r2plot.hi <- ggplot(st_geometry(win)) +
 
 
 r2plot <- grid.arrange(r2plot.main,r2plot.lo,r2plot.hi,layout_matrix = rbind(c(1,2),c(1,3)),widths=c(2,1),heights=c(1,1),padding=unit(0.2,'cm'))
-ggsave(here('figures','r2_icar_post.pdf'),plot=r2plot,width=7,height=5)
+ggsave(here('figures_and_tables','posterior_r2.pdf'),plot=r2plot,width=7,height=5)
 
 # Probability of Decrease model A----
 
@@ -251,34 +225,7 @@ decrProb.right <- ggplot(st_geometry(win)) +
 	theme(legend.position='none',plot.margin = margin(1, 1, 1, 1),legend.text=element_text(size=7),legend.title=element_text(size=8),legend.key.size=unit(0.2,'in'),legend.background=element_blank())
 
 decrProb <- grid.arrange(decrProb.left,decrProb.right,ncol=2,padding=unit(0.2,'cm'))
-ggsave(here('figures','decrProb.pdf'),plot=decrProb,width=7,height=5)
-
-
-# Posterior beta1 model A ----
-post.beta1.r12.plot <- data.frame(key='beta1',value=posterior.a[,'beta1'])
-
-#TODO : fix below
-beta.r12 <- ggplot(aes(x = value),data=post.beta1.r12.plot) + 
-	stat_halfeye(slab_fill='steelblue',slab_alpha=0.5,scale=0.8,.width=c(0.5,0.9),point_interval="median_hdi") +
-	labs(x=TeX("$\\beta$"),y="Posterior Density") +
-	geom_vline(aes(xintercept=0),linetype='dashed') +
-	theme_minimal() 
-
-ggsave(here('figures','beta_r12.pdf'),plot=beta.r12,width=5,height=4)
-
-
-post.beta1.eta.plot <- data.frame(key='beta1',value=posterior.b[,'beta1'])
-
-#TODO : fix below
-beta.eta <- ggplot(aes(x = value),data=post.beta1.eta.plot) + 
-	stat_halfeye(slab_fill='steelblue',slab_alpha=0.5,scale=0.8,.width=c(0.5,0.9),point_interval="median_hdi") +
-	labs(x=TeX("$\\beta$"),y="Posterior Density") +
-	geom_vline(aes(xintercept=0),linetype='dashed') +
-	theme_minimal() 
-
-ggsave(here('figures','beta_eta.pdf'),plot=beta.eta,width=5,height=4)
-
-
+ggsave(here('figures_and_tables','decrease_probability.pdf'),plot=decrProb,width=7,height=5)
 
 # Posterior eta model B ----
 etaplot.main <- ggplot(st_geometry(win)) +
@@ -288,7 +235,6 @@ etaplot.main <- ggplot(st_geometry(win)) +
 	scale_fill_gradient2(low='blue',mid='white',high='red',midpoint=0,name=TeX('$\\eta$'),limits=minmax.eta) +
 	coord_sf(xlim=c(129.5,145),ylim=c(31,45.8)) +
 	annotate('text',label=TeX('Posterior Mean $\\eta$'),x=132,y=45) +
-#TODO Could be done in latex2exp
 	xlab('Longitude') +
 	ylab('Latitude') +
 	theme(legend.position='inside',legend.position.inside=c(0.3,0.6),plot.margin = margin(0, 0, 0, 0),legend.text=element_text(size=7),legend.title=element_text(size=8),legend.key.size=unit(0.2,'in'),legend.background=element_blank())
@@ -315,8 +261,64 @@ etaplot.hi <- ggplot(st_geometry(win)) +
 
 
 etaplot <- grid.arrange(etaplot.main,etaplot.lo,etaplot.hi,layout_matrix = rbind(c(1,2),c(1,3)),widths=c(2,1),heights=c(1,1),padding=unit(0.2,'cm'))
-ggsave(here('figures','eta_posterior.pdf'),plot=etaplot,width=7,height=5)
+ggsave(here('figures_and_tables','posterior_eta.pdf'),plot=etaplot,width=7,height=5)
 
+
+# Posterior Means of the two models
+r1mean <- ggplot(st_geometry(win)) +
+	geom_sf(fill='darkgrey',colour=NA) +
+	geom_sf(data=r1_hexgrid,aes(fill=p_mean),color='darkgrey') +
+	geom_sf(data=subset(r1_hexgrid,obs==FALSE),fill='darkgrey',color='darkgrey') +
+	scale_fill_gradient2(low='blue',mid='white',high='red',midpoint=0,name='Annual Growth Rate (%)',limits=minmax.r12) +
+	coord_sf(xlim=c(129.5,145),ylim=c(31,45.8)) +
+	annotate('text',label=TeX("Posterior Mean $r_1$"),x=133,y=45,size=5) +
+	labs(x='',y='') +
+	theme(legend.position='inside',legend.position.inside=c(0.3,0.6),plot.margin = margin(0, 0, 0, 0),legend.text=element_text(size=8),legend.title=element_text(size=10),legend.key.size=unit(0.25,'in'),legend.background=element_blank(),axis.title=element_text(size=6),plot.title=element_text(size=6),axis.text=element_text(size=8))
+
+r2mean <- ggplot(st_geometry(win)) +
+	geom_sf(fill='darkgrey',colour=NA) +
+	geom_sf(data=r2_hexgrid,aes(fill=p_mean),color='darkgrey') +
+	geom_sf(data=subset(r2_hexgrid,obs==FALSE),fill='darkgrey',color='darkgrey') +
+	scale_fill_gradient2(low='blue',mid='white',high='red',midpoint=0,name='Annual Growth Rate (%)',limits=minmax.r12) +
+	coord_sf(xlim=c(129.5,145),ylim=c(31,45.8)) +
+	labs(x='',y='') +
+	annotate('text',label=TeX("Posterior Mean $r_2$"),x=133,y=45,size=5) +
+	theme(legend.position='inside',legend.position.inside=c(0.3,0.6),plot.margin = margin(0, 0, 0, 0),legend.text=element_text(size=8),legend.title=element_text(size=10),legend.key.size=unit(0.25,'in'),legend.background=element_blank(),axis.title=element_text(size=6),plot.title=element_text(size=6),axis.text=element_text(size=8))
+
+etamean <- ggplot(st_geometry(win)) +
+	geom_sf(fill='darkgrey',colour=NA) +
+	geom_sf(data=eta_hexgrid,aes(fill=p_mean),color='darkgrey') +
+	geom_sf(data=subset(eta_hexgrid,obs==FALSE),fill='darkgrey',color='darkgrey') +
+	scale_fill_gradient2(low='blue',mid='white',high='red',midpoint=0,name=TeX('$\\eta$'),limits=minmax.eta) +
+	coord_sf(xlim=c(129.5,145),ylim=c(31,45.8)) +
+	labs(x='',y='') +
+	annotate('text',label=TeX('Posterior Mean $\\eta$'),x=133,y=45,size=5) +
+	theme(legend.position='inside',legend.position.inside=c(0.3,0.6),plot.margin = margin(0, 0, 0, 0),legend.text=element_text(size=8),legend.title=element_text(size=10),legend.key.size=unit(0.25,'in'),legend.background=element_blank(),axis.title=element_text(size=6),plot.title=element_text(size=6),axis.text=element_text(size=8))
+
+posterior.means.combined  <- grid.arrange(r1mean,r2mean,etamean,ncol=3)
+ggsave(here('figures_and_tables','mean_posterior.pdf'),plot=posterior.means.combined,width=7.25,height=5)
+
+# Posterior beta  ----
+post.beta1.r12.plot <- data.frame(key='beta1',value=posterior.a[,'beta1'])
+beta.r12 <- ggplot(aes(x = value),data=post.beta1.r12.plot) + 
+	stat_halfeye(slab_fill='steelblue',slab_alpha=0.5,scale=0.8,.width=c(0.9),point_interval="median_hdi",size=1.5,linewidth=1) +
+	labs(x=TeX("$\\beta$"),y="Posterior Density",title='Model a') +
+	geom_vline(aes(xintercept=0),linetype='dashed') +
+	scale_x_continuous(breaks=c(0,-0.00001,-0.00002),labels=c('0',TeX('$1 \\times 10^{-5}$'),TeX('$2 \\times 10^{-5}$'))) +
+	theme_minimal() +
+	theme(plot.title=element_text(size=5),axis.title=element_text(size=5),axis.text=element_text(size=4)) 
+
+post.beta1.eta.plot <- data.frame(key='beta1',value=posterior.b[,'beta1'])
+beta.eta <- ggplot(aes(x = value),data=post.beta1.eta.plot) + 
+	stat_halfeye(slab_fill='steelblue',slab_alpha=0.5,scale=0.8,.width=c(0.9),point_interval="median_hdi",size=1.5,linewidth=1) +
+	labs(x=TeX("$\\beta$"),y="Posterior Density",title='Model b') +
+	geom_vline(aes(xintercept=0),linetype='dashed') +
+	theme_minimal() +
+	theme(plot.title=element_text(size=5),axis.title=element_text(size=5),axis.text=element_text(size=4)) 
+
+beta.combined  <- grid.arrange(beta.r12,beta.eta,ncol=1)
+
+ggsave(here('figures_and_tables','beta_posterior.pdf'),plot=beta.combined,width=2.25,height=3)
 
 # HexSpecific Plot ----
 r1r2keyplot <- ggplot(r1r2keys,aes(x=value,col=param,y=hex)) +
@@ -328,18 +330,18 @@ r1r2keyplot <- ggplot(r1r2keys,aes(x=value,col=param,y=hex)) +
 	geom_vline(xintercept=0,linetype='dashed') +
 	theme(legend.position = 'inside', legend.position.inside=c(0.2,0.8))
 
-ggsave(here('figures','r1r2keyhex_plot.pdf'),plot=r1r2keyplot,width=5,height=6)
 
 etakeyplot <- ggplot(etakeys,aes(x=value,y=hex)) + 
 	stat_pointinterval(position=position_dodge(0.3),.width=c(.5,.75,.9),point_interval='median_hdi') +
 	theme_minimal() +
 	geom_vline(xintercept=0,linetype='dashed') +
-	scale_x_continuous(name=TeX('$\\eta$'),sec.axis=sec_axis(trans=~1/(1+exp(-.)),breaks=round(plogis(c(-3,-2,-1,0,1)),2),name='Relative population size after the eruption')) +
-#	scale_x_continuous(name=TeX('$\\eta$'),sec.axis=sec_axis(~ exp(.),breaks=round(exp(c(-3,-2,-1,0,1)),2),name='Relative size after eruption')) +
+	scale_x_continuous(name=TeX('$\\eta$'),sec.axis=sec_axis(transform=~1/(1+exp(-.)),breaks=round(plogis(c(-3,-2,-1,0,1)),2),name='Relative proportion of dates after the eruption')) +
 	labs(x=TeX('$\\eta$'),y='Hexagon')
-etakeyplot
 
-ggsave(here('figures','etakeyhex_plot.pdf'),plot=etakeyplot,width=5,height=6)
+
+hex_combined <- grid.arrange(r1r2keyplot,etakeyplot,ncol=1)
+ggsave(here('figures_and_tables','hex_focus_plot.pdf'),plot=hex_combined,width=4.75,height=7)
+
 
 # Posterior parameters vs predictors ----
 post.r2$ash <- constants.icar$ash
@@ -364,10 +366,30 @@ ashplot2 <- ggplot(data=post.eta,aes(x=ash,y=p_mean)) +
 	geom_vline(xintercept=150,linetype='dashed') +
 	geom_hline(yintercept=0,linetype='dotted') +
 	scale_x_log10() +
-	scale_y_continuous(name=TeX('$\\eta$'),sec.axis=sec_axis(trans=~1/(1+exp(-.)),breaks=round(plogis(c(-3,-2,-1,0,1)),2),name='Relative population size after the eruption')) +
+	scale_y_continuous(name=TeX('$\\eta$'),sec.axis=sec_axis(trans=~1/(1+exp(-.)),breaks=round(plogis(c(-3,-2,-1,0,1)),2),name='Relative proportion of dates after the eruption')) +
 	labs(x='Average Thickness of Tephra Fall Deposit') +
 	theme_minimal()
 
 ashplot <- grid.arrange(ashplot1,ashplot2,ncol=1)
 
-ggsave(here('figures','post_scatter.pdf'),plot=ashplot,width=5,height=7)
+ggsave(here('figures_and_tables','post_scatter_ashfall.pdf'),plot=ashplot,width=4.75,height=7)
+
+## Posterior Summaries ----
+
+model.a.posterior <- data.frame(params = colnames(posterior.a),
+				mean = apply(posterior.a,2,mean),
+				lo90 = apply(posterior.a,2,function(x){coda::HPDinterval(mcmc(x),0.90)[1]}),
+				hi90 = apply(posterior.a,2,function(x){coda::HPDinterval(mcmc(x),0.90)[2]}),
+				ess = ess.a,
+				rhat = rhats.a[[1]][,1])
+
+write.csv(model.a.posterior,here('figures_and_tables','posteriors_model_a.csv'))
+
+model.b.posterior <- data.frame(params = colnames(posterior.b),
+				mean = apply(posterior.b,2,mean),
+				lo90 = apply(posterior.b,2,function(x){coda::HPDinterval(mcmc(x),0.90)[1]}),
+				hi90 = apply(posterior.b,2,function(x){coda::HPDinterval(mcmc(x),0.90)[2]}),
+				ess = ess.b,
+				rhat = rhats.b[[1]][,1])
+write.csv(model.b.posterior,here('figures_and_tables','posteriors_model_b.csv'))
+
