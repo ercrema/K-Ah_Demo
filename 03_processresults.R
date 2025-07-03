@@ -271,9 +271,9 @@ r1mean <- ggplot(st_geometry(win)) +
 	geom_sf(data=subset(r1_hexgrid,obs==FALSE),fill='darkgrey',color='darkgrey') +
 	scale_fill_gradient2(low='blue',mid='white',high='red',midpoint=0,name='Annual Growth Rate (%)',limits=minmax.r12) +
 	coord_sf(xlim=c(129.5,145),ylim=c(31,45.8)) +
-	annotate('text',label=TeX("Posterior Mean $r_1$"),x=133,y=45,size=5) +
+	annotate('text',label=TeX("Posterior Mean $r_1$"),x=134,y=45,size=3) +
 	labs(x='',y='') +
-	theme(legend.position='inside',legend.position.inside=c(0.3,0.6),plot.margin = margin(0, 0, 0, 0),legend.text=element_text(size=8),legend.title=element_text(size=10),legend.key.size=unit(0.25,'in'),legend.background=element_blank(),axis.title=element_text(size=6),plot.title=element_text(size=6),axis.text=element_text(size=8))
+	theme(legend.position='inside',legend.position.inside=c(0.3,0.6),plot.margin = margin(0, 0, 0, 0),legend.text=element_text(size=5),legend.title=element_text(size=6),legend.key.size=unit(0.2,'in'),legend.background=element_blank(),axis.title=element_text(size=6),plot.title=element_text(size=6),axis.text=element_text(size=8))
 
 r2mean <- ggplot(st_geometry(win)) +
 	geom_sf(fill='darkgrey',colour=NA) +
@@ -282,8 +282,8 @@ r2mean <- ggplot(st_geometry(win)) +
 	scale_fill_gradient2(low='blue',mid='white',high='red',midpoint=0,name='Annual Growth Rate (%)',limits=minmax.r12) +
 	coord_sf(xlim=c(129.5,145),ylim=c(31,45.8)) +
 	labs(x='',y='') +
-	annotate('text',label=TeX("Posterior Mean $r_2$"),x=133,y=45,size=5) +
-	theme(legend.position='inside',legend.position.inside=c(0.3,0.6),plot.margin = margin(0, 0, 0, 0),legend.text=element_text(size=8),legend.title=element_text(size=10),legend.key.size=unit(0.25,'in'),legend.background=element_blank(),axis.title=element_text(size=6),plot.title=element_text(size=6),axis.text=element_text(size=8))
+	annotate('text',label=TeX("Posterior Mean $r_2$"),x=134,y=45,size=3) +
+	theme(legend.position='inside',legend.position.inside=c(0.3,0.6),plot.margin = margin(0, 0, 0, 0),legend.text=element_text(size=5),legend.title=element_text(size=6),legend.key.size=unit(0.2,'in'),legend.background=element_blank(),axis.title=element_text(size=6),plot.title=element_text(size=6),axis.text=element_text(size=8))
 
 etamean <- ggplot(st_geometry(win)) +
 	geom_sf(fill='darkgrey',colour=NA) +
@@ -292,8 +292,8 @@ etamean <- ggplot(st_geometry(win)) +
 	scale_fill_gradient2(low='blue',mid='white',high='red',midpoint=0,name=TeX('$\\eta$'),limits=minmax.eta) +
 	coord_sf(xlim=c(129.5,145),ylim=c(31,45.8)) +
 	labs(x='',y='') +
-	annotate('text',label=TeX('Posterior Mean $\\eta$'),x=133,y=45,size=5) +
-	theme(legend.position='inside',legend.position.inside=c(0.3,0.6),plot.margin = margin(0, 0, 0, 0),legend.text=element_text(size=8),legend.title=element_text(size=10),legend.key.size=unit(0.25,'in'),legend.background=element_blank(),axis.title=element_text(size=6),plot.title=element_text(size=6),axis.text=element_text(size=8))
+	annotate('text',label=TeX('Posterior Mean $\\eta$'),x=134,y=45,size=3) +
+	theme(legend.position='inside',legend.position.inside=c(0.15,0.6),plot.margin = margin(0, 0, 0, 0),legend.text=element_text(size=5),legend.title=element_text(size=6),legend.key.size=unit(0.2,'in'),legend.background=element_blank(),axis.title=element_text(size=6),plot.title=element_text(size=6),axis.text=element_text(size=8))
 
 posterior.means.combined  <- grid.arrange(r1mean,r2mean,etamean,ncol=3)
 ggsave(here('figures_and_tables','mean_posterior.pdf'),plot=posterior.means.combined,width=7.25,height=5)
