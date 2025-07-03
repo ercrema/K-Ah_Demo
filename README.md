@@ -18,8 +18,8 @@ All output figures and tables generated using the R script `03_processresults.R`
 | **This repository**         | **Paper** | **Type** | **Location** |
 |-----------------------------|-----------|----------|--------------|
 | sample_map.pdf              | Figure 1  | Figure   | Main         |
-| beta_posterior.pdf          | Figure 2  | Figure   | Main         |
-| mean_posterior.pdf          | Figure 3  | Figure   | Main         |
+| mean_posterior.pdf          | Figure 2  | Figure   | Main         |
+| beta_posterior.pdf          | Figure 3  | Figure   | Main         |
 | post_scatter_ashfall.pd     | Figure 4  | Figure   | Main         |
 | hex_focus_plot.pdf          | Figure 5  | Figure   | Main         |
 | ashfall_model_raw.pdf       | Figure S1 | Figure   | ESM          |
