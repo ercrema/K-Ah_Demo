@@ -322,7 +322,7 @@ ggsave(here('figures_and_tables','beta_posterior.pdf'),plot=beta.combined,width=
 
 # HexSpecific Plot ----
 r1r2keyplot <- ggplot(r1r2keys,aes(x=value,col=param,y=hex)) +
-	stat_pointinterval(position=position_dodge(0.3),.width=c(.5,.75,.9),point_interval='median_hdi') +
+	stat_pointinterval(position=position_dodge(0.3),.width=c(.5,.9),point_interval='median_hdi') +
 	scale_color_manual(values=c('r1'='darkorange','r2'='darkgreen'),labels=c('r1'=TeX('$r_1$'),'r2'=TeX('$r_2$'))) +
 	theme_minimal() +
 	xlim(-1,0.5) +
@@ -332,7 +332,7 @@ r1r2keyplot <- ggplot(r1r2keys,aes(x=value,col=param,y=hex)) +
 
 
 etakeyplot <- ggplot(etakeys,aes(x=value,y=hex)) + 
-	stat_pointinterval(position=position_dodge(0.3),.width=c(.5,.75,.9),point_interval='median_hdi') +
+	stat_pointinterval(position=position_dodge(0.3),.width=c(.5,.9),point_interval='median_hdi') +
 	theme_minimal() +
 	geom_vline(xintercept=0,linetype='dashed') +
 	scale_x_continuous(name=TeX('$\\eta$'),sec.axis=sec_axis(transform=~1/(1+exp(-.)),breaks=round(plogis(c(-3,-2,-1,0,1)),2),name='Relative proportion of dates after the eruption')) +
