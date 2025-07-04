@@ -33,7 +33,7 @@ post.r2$p_hi90 <- apply(r2.matrix,2,function(x){HPDinterval(mcmc(x),prob=0.9)[2]
 post.r2$prob_decrease  <- apply(r2.matrix,2,function(x){sum(x<0)/length(x)})
 
 minmax.r12  <- range(c(post.r1$p_lo90,post.r2$p_lo90,post.r1$p_hi90,post.r2$p_hi90)) |> round(1)
-minmax.r12 <- c(-1.3,0.5)
+minmax.r12.mean  <- range(c(post.r1$p_mean,post.r2$p_mean))
 
 # Model B
 post.eta <- data.frame(hexid=1:constants.icar$n.hex)
@@ -269,7 +269,7 @@ r1mean <- ggplot(st_geometry(win)) +
 	geom_sf(fill='darkgrey',colour=NA) +
 	geom_sf(data=r1_hexgrid,aes(fill=p_mean),color='darkgrey') +
 	geom_sf(data=subset(r1_hexgrid,obs==FALSE),fill='darkgrey',color='darkgrey') +
-	scale_fill_gradient2(low='blue',mid='white',high='red',midpoint=0,name='Annual Growth Rate (%)',limits=minmax.r12) +
+	scale_fill_gradient2(low='royalblue',mid='white',high='firebrick',midpoint=0,name='Annual Growth Rate (%)',limits=minmax.r12.mean) +
 	coord_sf(xlim=c(129.5,145),ylim=c(31,45.8)) +
 	annotate('text',label=TeX("Posterior Mean $r_1$"),x=134,y=45,size=3) +
 	labs(x='',y='') +
@@ -279,7 +279,7 @@ r2mean <- ggplot(st_geometry(win)) +
 	geom_sf(fill='darkgrey',colour=NA) +
 	geom_sf(data=r2_hexgrid,aes(fill=p_mean),color='darkgrey') +
 	geom_sf(data=subset(r2_hexgrid,obs==FALSE),fill='darkgrey',color='darkgrey') +
-	scale_fill_gradient2(low='blue',mid='white',high='red',midpoint=0,name='Annual Growth Rate (%)',limits=minmax.r12) +
+	scale_fill_gradient2(low='royalblue',mid='white',high='firebrick',midpoint=0,name='Annual Growth Rate (%)',limits=minmax.r12.mean) +
 	coord_sf(xlim=c(129.5,145),ylim=c(31,45.8)) +
 	labs(x='',y='') +
 	annotate('text',label=TeX("Posterior Mean $r_2$"),x=134,y=45,size=3) +
@@ -289,7 +289,7 @@ etamean <- ggplot(st_geometry(win)) +
 	geom_sf(fill='darkgrey',colour=NA) +
 	geom_sf(data=eta_hexgrid,aes(fill=p_mean),color='darkgrey') +
 	geom_sf(data=subset(eta_hexgrid,obs==FALSE),fill='darkgrey',color='darkgrey') +
-	scale_fill_gradient2(low='blue',mid='white',high='red',midpoint=0,name=TeX('$\\eta$'),limits=minmax.eta) +
+	scale_fill_gradient2(low='royalblue',mid='white',high='firebrick',midpoint=0,name=TeX('$\\eta$')) +
 	coord_sf(xlim=c(129.5,145),ylim=c(31,45.8)) +
 	labs(x='',y='') +
 	annotate('text',label=TeX('Posterior Mean $\\eta$'),x=134,y=45,size=3) +
