@@ -17,16 +17,15 @@ All output figures and tables generated using the R script `03_processresults.R`
 
 | **This repository**         | **Paper** | **Type** | **Location** |
 |-----------------------------|-----------|----------|--------------|
-| sample_map.pdf              | Figure 1  | Figure   | Main         |
+| samplemap_and_ashfall.pdf   | Figure 1  | Figure   | Main         |
 | mean_posterior.pdf          | Figure 2  | Figure   | Main         |
 | hex_focus_plot.pdf          | Figure 3  | Figure   | Main         |
 | beta_posterior.pdf          | Figure 4  | Figure   | Main         |
 | post_scatter_ashfall.pd     | Figure 5  | Figure   | Main         |
-| ashfall_model_raw.pdf       | Figure S1 | Figure   | ESM          |
-| posterior_r1.pdf            | Figure S2 | Figure   | ESM          |
-| posterior_r2.pdf            | Figure S3 | Figure   | ESM          |
-| decrease_probability.pdf    | Figure S4 | Figure   | ESM          |
-| posterior_eta.pdf           | Figure S5 | Figure   | ESM          |
+| posterior_r1.pdf            | Figure S1 | Figure   | ESM          |
+| posterior_r2.pdf            | Figure S2 | Figure   | ESM          |
+| decrease_probability.pdf    | Figure S3 | Figure   | ESM          |
+| posterior_eta.pdf           | Figure S4 | Figure   | ESM          |
 | posteriors_model_a.csv      | Table S1  | Table    | ESM          |
 | posteriors_model_b.csv      | Table S2  | Table    | ESM          |
 
