@@ -88,7 +88,7 @@ hexgrid_plot$ash <- hexgrid$ash
 
 # Make Figures ----
 
-# Sample Distribution Map ----
+# Sample Distribution Map and Eruption Model  ----
 sample_map <- ggplot(st_geometry(win)) +
 	geom_sf(fill='darkgrey',colour='darkgrey') +
 	geom_sf(data=hexgrid_plot,aes(fill=ash),color='white',alpha=0.7)+
@@ -110,20 +110,29 @@ sample_map <- ggplot(st_geometry(win)) +
 	labs(x='Longitude',y='Laitude',fill='Average Deposit \nThickness (mm)') +
 	theme(legend.position='inside',legend.position.inside=c(0.2,0.75),legend.background=element_rect(fill=alpha('white',0.5)),legend.key.size=unit(0.2,'in'),legend.text=element_text(size=5.5),legend.title=element_text(size=7))
 
-ggsave(here('figures_and_tables','sample_map.pdf'),plot=sample_map,width=4,height=4)
-
-# K-Akahoya Ashfall model ----
 ashfall_model_raw <- ggplot(st_geometry(win)) +
 	geom_sf(fill='darkgrey',colour='darkgrey') +
-	geom_contour_filled(data=tephra,aes(x=x,y=y,z=value),alpha=0.5,breaks=c(0,150,300,500,1000,1500,2000,2500,3000)) +
-	scale_fill_viridis_d(option='turbo') +
+#	geom_contour_filled(data=tephra,aes(x=x,y=y,z=value),alpha=0.5,breaks=c(0,150,300,500,1000,1500,2000,2500,3000)) +
+	geom_contour_filled(data=tephra,aes(x=x,y=y,z=value),breaks=c(0,5,25,150,1000,2000,3500)) +
+	scale_fill_viridis_d(
+			     option = "plasma",  # or "viridis", "inferno", etc.
+			     direction = 1,      # 1 = low to high
+			     alpha = 0.5,        # semitransparency
+			     labels = c(" < 5mm (Thin)", "5 - 25 mm (Modetate)", "25 - 150mm (Thick)", "150 - 1000mm (Very Thick)", "1000 - 2000 mm ", "> 2000 mm "),
+			     name = "Tephra Thickness (in mm)"
+	) + 	 
 	coord_sf(xlim=c(129.5,145),ylim=c(31,45.8)) +
 	annotate('point',x=130.308,y=30.789,fill='red',size=2,shape=24) +
 	annotate('text',x=133.5,y=30.9,label='Kikai Caldera',size=3) +
-	labs(fill='Tephra thickness (in mm)') +
-	theme(legend.position='inside',legend.position.inside=c(0.25,0.75),legend.background=element_rect(fill=alpha('white',0.5)),legend.key.size=unit(0.15,'in'),legend.text=element_text(size=5),legend.title=element_text(size=6))
+	annotate('text',x=131,y=33,label='Kyushu',size=2.5) +
+	annotate('text',x=134,y=33.7,label='Shikoku',size=2.5) +
+	annotate('text',x=139,y=36.5,label='Honshu',size=2.5) +
+	annotate('text',x=143,y=43.5,label='Kyushu',size=2.5) +
+	labs(fill='Tephra thickness (in mm)',x='Longitude',y='Latitude') +
+	theme(legend.position='inside',legend.position.inside=c(0.3,0.75),legend.background=element_rect(fill=alpha('white',0.5)),legend.key.size=unit(0.2,'in'),legend.text=element_text(size=5.5),legend.title=element_text(size=7))
 
-ggsave(here('figures_and_tables','ashfall_model_raw.pdf'),plot=ashfall_model_raw,width=4,height=4)
+ashandhex <- grid.arrange(sample_map,ashfall_model_raw,ncol=2,padding=unit(0.2,'cm'))
+ggsave(here('figures_and_tables','samplemap_and_ashfall.pdf'),plot=ashandhex,width=7,height=4)
 
 # r1 posterior model A ----
 
