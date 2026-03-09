@@ -8,7 +8,7 @@ Crema, E.R. et al (In Prep). Divergent Demographic Responses to the Kikai-Akahoy
 External data required for all analyses are either dynamically downloaded or contained in the _data_ folder. Radiocarbon dates for demographic inference were obtained from the [Database of Radiocarbon Dates Published in Japanese Archaeological Site Reports](https://www.rekihaku.ac.jp/up-cgi/login.pl?p=param/esrd_en/db_param#:~:text=Thus%2C%20a%20systematic%20collation%20of,continually%20being%20maintained%20and%20updated.), curated by the National Museum of Japanese History. We used version 1.2.0 of the curated English translation of the database (see [Kudo et al 2023](https://doi.org/10.5334/joad.115) for details), dynamically downloaded within the R script file `01_dataprep.R`. Ashfall data for the Kikai-Akahoya eruption were obtained from the [Tephra Database](https://doi.org/10.5281/zenodo.5109160) described in [Uesawa et al 2022](https://doi.org/10.1186/s13617-022-00126-x). 
 
 ### Main Pipeline ###
-The analyses are conducted in three steps: data preparation, core analysis, and post-processing. Data preparation is executed in the R script file `01_dataprep.R`, where external files are imported and pre-processed for the core analyses. Please note that executing `01_dataprep.R` requires an internet connection. The script generates an R image file (`01_dataprep_out.RData`) as output, containing all the necessary objects for subsequent analysis and visualisation of the results. The core analyses consist of two Bayesian models fitted using the NIMBLE package and included in two separate R script files: `02a_fitmodel.R` and `02b_fitmodel.R`. Both scripts require high computational costs and multicore processors (at least 4 cores) with an estimated runtime between 12 and 24 hours, depending on the CPU. The output of the two models are stored in the R image files `/Results/02a_fitmodel_out.RData` and `/Results/02b_fitmodel_out.RData`. Finally, the R script file `03_processresults.R` contains functions and commands to generate all figures and tables for both the main and supplementary materials (see section below for details).  
+The analyses are conducted in three steps: data preparation, core analysis, and post-processing. Data preparation is executed in the R script file `01_dataprep.R`, where external files are imported and pre-processed for the core analyses. Please note that executing `01_dataprep.R` requires an internet connection. The script generates an R image file (`01_dataprep_out.RData`) as output, containing all the necessary objects for subsequent analysis and visualisation of the results. The core analyses consist of two Bayesian models fitted using the NIMBLE package and included in two separate R script files: `02a_fitmodel.R` and `02b_fitmodel.R`. Both scripts require high computational costs and multicore processors (at least 4 cores) with an estimated runtime between 12 and 24 hours, depending on the CPU. The outputs of the two models are stored in the R image files `/Results/02a_fitmodel_out.RData` and `/Results/02b_fitmodel_out.RData`. Finally, the R script file `03_processresults.R` contains functions and commands to generate all figures and tables for both the main and supplementary materials (see section below for details). The script `0X_figure_chronology.R` can be executed independently, as it generates a chart detailing the chrono-typological sequence in the island of Kyushu, which is not required for any of the analyses.  
 
 
 ### Outputs in Relation to the Research Article ###
@@ -17,11 +17,12 @@ All output figures and tables generated using the R script `03_processresults.R`
 
 | **This repository**         | **Paper** | **Type** | **Location** |
 |-----------------------------|-----------|----------|--------------|
-| samplemap_and_ashfall.pdf   | Figure 1  | Figure   | Main         |
-| mean_posterior.pdf          | Figure 2  | Figure   | Main         |
-| hex_focus_plot.pdf          | Figure 3  | Figure   | Main         |
-| beta_posterior.pdf          | Figure 4  | Figure   | Main         |
-| post_scatter_ashfall.pd     | Figure 5  | Figure   | Main         |
+| figure_chronology.pdf       | Figure 2  | Figure   | Main         |
+| samplemap_and_ashfall.pdf   | Figure 3  | Figure   | Main         |
+| mean_posterior.pdf          | Figure 4  | Figure   | Main         |
+| hex_focus_plot.pdf          | Figure 5  | Figure   | Main         |
+| post_scatter_ashfall.pd     | Figure 6  | Figure   | Main         |
+| beta_posterior.pdf          | Figure 7  | Figure   | Main         |
 | posterior_r1.pdf            | Figure S1 | Figure   | ESM          |
 | posterior_r2.pdf            | Figure S2 | Figure   | ESM          |
 | decrease_probability.pdf    | Figure S3 | Figure   | ESM          |
@@ -29,6 +30,7 @@ All output figures and tables generated using the R script `03_processresults.R`
 | posteriors_model_a.csv      | Table S1  | Table    | ESM          |
 | posteriors_model_b.csv      | Table S2  | Table    | ESM          |
 
+Please note that Figure 1 in the main text was a photograph, while Figure 2 was edited in Inkscape.
 
 ### R Session Info ####
 ```
@@ -93,5 +95,5 @@ loaded via a namespace (and not attached):
 [76] mgcv_1.9-1             xfun_0.52              pkgconfig_2.0.3  
 ```
 ### Funding ###]
-Funded by the Swedish Research Council (VR) project _Surviving the Apocalypse: multidimensional modeling of the impact of a prehistoric megadisaster on people’s lifeworlds, technologies and demography_ GRANT NUMBER TO BE INSERTED
+Funded by the Swedish Research Council (VR) project _Surviving the Apocalypse: multidimensional modeling of the impact of a prehistoric megadisaster on people’s lifeworlds, technologies and demography_ (Grant Code: 2024-00822).
 
