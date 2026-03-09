@@ -361,7 +361,7 @@ post.eta$keys <- NA
 post.eta$keys[keys] <- key.letters
 
 ashplot1 <- ggplot(data=post.r2,aes(x=ash,y=p_mean)) +
-	geom_errorbar(aes(ymin=p_lo90,ymax=p_hi90),alpha=0.5) +
+	geom_errorbar(aes(ymin=p_lo90,ymax=p_hi90),alpha=0.8,color='lightgrey') +
 	geom_point() +
 	geom_vline(xintercept=150,linetype='dashed') +
 	geom_hline(yintercept=0,linetype='dotted') +
@@ -370,7 +370,7 @@ ashplot1 <- ggplot(data=post.r2,aes(x=ash,y=p_mean)) +
 	theme_minimal()
 
 ashplot2 <- ggplot(data=post.eta,aes(x=ash,y=p_mean)) +
-	geom_errorbar(aes(ymin=p_lo90,ymax=p_hi90),alpha=0.5) +
+	geom_errorbar(aes(ymin=p_lo90,ymax=p_hi90),alpha=0.8,color='lightgrey') +
 	geom_point() +
 	geom_vline(xintercept=150,linetype='dashed') +
 	geom_hline(yintercept=0,linetype='dotted') +
