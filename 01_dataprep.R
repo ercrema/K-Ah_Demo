@@ -160,7 +160,7 @@ mcal.d500 <- ifelse(mcal.d500<=upper[1],upper[1]+1,mcal.d500)
 theta.init.icar.d500 <- mcal.d500
 
 # Save everying into an R image file 
-save(dat.icar.d500,constants.icar.d500,theta.init.icar.d500,sites.df.d500,dates.df.d500,hexgrid,hexgrid_plot,file=here('01_dataprep_out_d500.RData'))
+save(dat.icar.d500,constants.icar.d500,theta.init.icar.d500,sites.df.d500,dates.df.d500,hexgrid,hexgrid_plot,file=here('data','01_dataprep_out_d500.RData'))
 
 
 
@@ -221,7 +221,7 @@ mcal.d750 <- ifelse(mcal.d750<=upper[2],upper[2]+1,mcal.d750)
 theta.init.icar.d750 <- mcal.d750
 
 # Save everying into an R image file 
-save(dat.icar.d750,constants.icar.d750,theta.init.icar.d750,sites.df.d750,dates.df.d750,hexgrid,hexgrid_plot,file=here('01_dataprep_out_d750.RData'))
+save(dat.icar.d750,constants.icar.d750,theta.init.icar.d750,sites.df.d750,dates.df.d750,hexgrid,hexgrid_plot,file=here('data','01_dataprep_out_d750.RData'))
 
 
 # delta 1000 ----
@@ -278,9 +278,9 @@ constants.icar.d1000$delta0 <- delta0
 mcal.d1000 <- medCal(calibrate(dat.icar.d1000$cra,dat.icar.d1000$cra.error))
 mcal.d1000 <- ifelse(mcal.d1000>=lower[3],lower[3]-1,mcal.d1000)
 mcal.d1000 <- ifelse(mcal.d1000<=upper[3],upper[3]+1,mcal.d1000)
-theta.init.icar.d1000 <- mcal.d1000
+theta.init.icar.d100 <- mcal.d1000
 
 # Save everying into an R image file 
-save(dat.icar.d1000,constants.icar.d1000,theta.init.icar.d1000,sites.df.d1000,dates.df.d1000,hexgrid,hexgrid_plot,file=here('01_dataprep_out_d1000.RData'))
+save(dat.icar.d1000,constants.icar.d1000,theta.init.icar.d1000,sites.df.d1000,dates.df.d1000,hexgrid,hexgrid_plot,file=here('data','01_dataprep_out_d1000.RData'))
 
 
