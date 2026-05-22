@@ -127,7 +127,7 @@ ashfall_model_raw <- ggplot(st_geometry(win)) +
 	annotate('text',x=131,y=33,label='Kyushu',size=2.5) +
 	annotate('text',x=134,y=33.7,label='Shikoku',size=2.5) +
 	annotate('text',x=139,y=36.5,label='Honshu',size=2.5) +
-	annotate('text',x=143,y=43.5,label='Kyushu',size=2.5) +
+	annotate('text',x=143,y=43.5,label='Hokkaido',size=2.5) +
 	labs(fill='Tephra thickness (in mm)',x='Longitude',y='Latitude') +
 	theme(legend.position='inside',legend.position.inside=c(0.3,0.75),legend.background=element_rect(fill=alpha('white',0.5)),legend.key.size=unit(0.2,'in'),legend.text=element_text(size=5.5),legend.title=element_text(size=7))
 
