@@ -48,6 +48,7 @@ hexgrid.latlong.vect <- st_transform(hexgrid,4326) |> vect()
 avg.tephra  <- extract(tephra.4326,hexgrid.latlong.vect,fun=mean,na.rm=TRUE)
 avg.dist  <- extract(distance.rast,hexgrid.latlong.vect,fun=mean,na.rm=TRUE)
 hexgrid$ash <- avg.tephra[,2]
+hexgrid$logAsh <- log(hexgrid$ash+1,base=10)
 hexgrid$dist <- avg.dist[,2]
 
 # extract neighbourhood data
@@ -109,7 +110,8 @@ cald.d500 <- cald[d500.i]
 # Random thinning
 bins.d500 <- binPrep(ages=cald.d500,h=binsize,sites=d.d500$SiteID)
 j.d500 <- thinDates(ages=d.d500$C14Age,errors=d.d500$C14Error,bins=bins.d500,size=1,thresh=1,seed=123)
-d.d500 <- d[j.d500,]
+d.d500 <- d.d500[j.d500,]
+
 
 # Filter to Sites located within japan_buffer
 i.d500 <- which(st_within(st_as_sf(d.d500,coords=c('Easting','Northing'),crs=6684),japan.buffer,sparse=FALSE))
@@ -144,6 +146,7 @@ constants.icar.d500$num <- nbInfo$num
 constants.icar.d500$L <- length(nbInfo$adj)
 # Predictors
 constants.icar.d500$ash <- hexgrid$ash
+constants.icar.d500$logAsh <- hexgrid$logAsh
 constants.icar.d500$dist <- hexgrid$dist
 #calibration vectors
 constants.icar.d500$calBP <- intcal20$CalBP
@@ -170,7 +173,7 @@ cald.d750 <- cald[d750.i]
 # Random thinning
 bins.d750 <- binPrep(ages=cald.d750,h=binsize,sites=d.d750$SiteID)
 j.d750 <- thinDates(ages=d.d750$C14Age,errors=d.d750$C14Error,bins=bins.d750,size=1,thresh=1,seed=123)
-d.d750 <- d[j.d750,]
+d.d750 <- d.d750[j.d750,]
 
 # Filter to Sites located within japan_buffer
 i.d750 <- which(st_within(st_as_sf(d.d750,coords=c('Easting','Northing'),crs=6684),japan.buffer,sparse=FALSE))
@@ -205,6 +208,7 @@ constants.icar.d750$num <- nbInfo$num
 constants.icar.d750$L <- length(nbInfo$adj)
 # Predictors
 constants.icar.d750$ash <- hexgrid$ash
+constants.icar.d750$logAsh <- hexgrid$logAsh
 constants.icar.d750$dist <- hexgrid$dist
 #calibration vectors
 constants.icar.d750$calBP <- intcal20$CalBP
@@ -230,7 +234,7 @@ cald.d1000 <- cald[d1000.i]
 # Random thinning
 bins.d1000 <- binPrep(ages=cald.d1000,h=binsize,sites=d.d1000$SiteID)
 j.d1000 <- thinDates(ages=d.d1000$C14Age,errors=d.d1000$C14Error,bins=bins.d1000,size=1,thresh=1,seed=123)
-d.d1000 <- d[j.d1000,]
+d.d1000 <- d.d1000[j.d1000,]
 
 # Filter to Sites located within japan_buffer
 i.d1000 <- which(st_within(st_as_sf(d.d1000,coords=c('Easting','Northing'),crs=6684),japan.buffer,sparse=FALSE))
@@ -265,6 +269,7 @@ constants.icar.d1000$num <- nbInfo$num
 constants.icar.d1000$L <- length(nbInfo$adj)
 # Predictors
 constants.icar.d1000$ash <- hexgrid$ash
+constants.icar.d1000$logAsh <- hexgrid$logAsh
 constants.icar.d1000$dist <- hexgrid$dist
 #calibration vectors
 constants.icar.d1000$calBP <- intcal20$CalBP
@@ -282,5 +287,3 @@ theta.init.icar.d100 <- mcal.d1000
 
 # Save everying into an R image file 
 save(dat.icar.d1000,constants.icar.d1000,theta.init.icar.d1000,sites.df.d1000,dates.df.d1000,hexgrid,hexgrid_plot,file=here('data','01_dataprep_out_d1000.RData'))
-
-
