@@ -2,7 +2,7 @@
 
 This repository contains data and scripts used in the following paper:
 
-Crema, E.R., Kuwahata, M., Uchiyama, J., Junno, A., Riede, F, and Jordan, P.D. (submitted). _DDivergent Demographic Responses to the Kikai-Akahoya Volcanic Catastrophe in Mid-Holocene Japan_
+Crema, E.R., Kuwahata, M., Uchiyama, J., Junno, A., Riede, F, and Jordan, P.D. (submitted). _Divergent Demographic Responses to the Kikai-Akahoya Volcanic Catastrophe in Mid-Holocene Japan_
 
 ### External Data ###
 External data required for all analyses are either dynamically downloaded or contained in the _data_ folder. Radiocarbon dates for demographic inference were obtained from the [Database of Radiocarbon Dates Published in Japanese Archaeological Site Reports](https://www.rekihaku.ac.jp/up-cgi/login.pl?p=param/esrd_en/db_param#:~:text=Thus%2C%20a%20systematic%20collation%20of,continually%20being%20maintained%20and%20updated.), curated by the National Museum of Japanese History. We used version 1.2.0 of the curated English translation of the database (see [Kudo et al 2023](https://doi.org/10.5334/joad.115) for details), dynamically downloaded within the R script file `01_dataprep.R`. Ashfall data for the Kikai-Akahoya eruption were obtained from the [Tephra Database](https://doi.org/10.5281/zenodo.5109160) described in [Uesawa et al 2022](https://doi.org/10.1186/s13617-022-00126-x). 
