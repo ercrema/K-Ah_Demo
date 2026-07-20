@@ -1,34 +1,39 @@
-# R scripts for the paper 'Divergent Demographic Responses to the Kikai-Akahoya Mega-Eruption in Prehistoric Japan'
+# R scripts for the paper 'Divergent Demographic Responses to the Kikai-Akahoya Volcanic Catastrophe in Mid-Holocene Japan'
 
 This repository contains data and scripts used in the following paper:
 
-Crema, E.R., Kuwahata, M., Uchiyama, J., Junno, A., Riede, F, and Jordan, P.D. (submitted). _Divergent Demographic Responses to the Kikai-Akahoya Mega-Eruption in Prehistoric Japan_
+Crema, E.R., Kuwahata, M., Uchiyama, J., Junno, A., Riede, F, and Jordan, P.D. (submitted). _DDivergent Demographic Responses to the Kikai-Akahoya Volcanic Catastrophe in Mid-Holocene Japan_
 
 ### External Data ###
 External data required for all analyses are either dynamically downloaded or contained in the _data_ folder. Radiocarbon dates for demographic inference were obtained from the [Database of Radiocarbon Dates Published in Japanese Archaeological Site Reports](https://www.rekihaku.ac.jp/up-cgi/login.pl?p=param/esrd_en/db_param#:~:text=Thus%2C%20a%20systematic%20collation%20of,continually%20being%20maintained%20and%20updated.), curated by the National Museum of Japanese History. We used version 1.2.0 of the curated English translation of the database (see [Kudo et al 2023](https://doi.org/10.5334/joad.115) for details), dynamically downloaded within the R script file `01_dataprep.R`. Ashfall data for the Kikai-Akahoya eruption were obtained from the [Tephra Database](https://doi.org/10.5281/zenodo.5109160) described in [Uesawa et al 2022](https://doi.org/10.1186/s13617-022-00126-x). 
 
 ### Main Pipeline ###
-The analyses are conducted in three steps: data preparation, core analysis, and post-processing. Data preparation is executed in the R script file `01_dataprep.R`, where external files are imported and pre-processed for the core analyses. Please note that executing `01_dataprep.R` requires an internet connection. The script generates an R image file (`01_dataprep_out.RData`) as output, containing all the necessary objects for subsequent analysis and visualisation of the results. The core analyses consist of two Bayesian models fitted using the NIMBLE package and included in two separate R script files: `02a_fitmodel.R` and `02b_fitmodel.R`. Both scripts require high computational costs and multicore processors (at least 4 cores) with an estimated runtime between 12 and 24 hours, depending on the CPU. The outputs of the two models are stored in the R image files `/Results/02a_fitmodel_out.RData` and `/Results/02b_fitmodel_out.RData`. Finally, the R script file `03_processresults.R` contains functions and commands to generate all figures and tables for both the main and supplementary materials (see section below for details). The script `0X_figure_chronology.R` can be executed independently, as it generates a chart detailing the chrono-typological sequence in the island of Kyushu, which is not required for any of the analyses.  
+The analyses are conducted in three steps: data preparation, core analysis, and post-processing. Data preparation is executed in the R script file `01_dataprep.R`, where external files are imported and pre-processed for the core analyses. Please note that executing `01_dataprep.R` requires an internet connection. The script generates three R image files (`01_dataprep_out_d500.RData`, `01_dataprep_out_d750.RData`, and `01_dataprep_out_d1000.RData`) as output, containing all the necessary objects for subsequent analysis and visualisation of the results across three different time windows. The core analyses consist of two series of Bayesian models, fitted using the NIMBLE package, and are included in the folder `runscripts`. The naming convention distinguished between the two models (`02a*` and `02b*`), the variant (`icar0` for ICAR only, `icar1` with distance as predictor, `icar2` as the changepoint model presented in the main manuscript, and `icar3` as the ash thickness as predictor), and the time window (`500`, `750`, and `1000`, with the three version only for the `icar2` model). These scripts require high computational costs and multicore processors (at least 4 cores) with an estimated runtime between 12 and 24 hours, depending on the CPU. The outputs of the two models are stored as R image files in the `Results` folder. Finally, the R script file `03_processresults.R` contains functions and commands to generate all figures and tables for both the main and supplementary materials (see section below for details). The script `0X_figure_chronology.R` can be executed independently, as it generates a chart detailing the chrono-typological sequence on the island of Kyushu, which is not required for any of the analyses.  
 
 
 ### Outputs in Relation to the Research Article ###
 
 All output figures and tables generated using the R script `03_processresults.R` are contained in the directory `figures_and_tables`. Correspondence to figure and table numbers in the manuscript can be found in the table below:
 
-| **This repository**         | **Paper** | **Type** | **Location** |
-|-----------------------------|-----------|----------|--------------|
-| figure_chronology.pdf       | Figure 2  | Figure   | Main         |
-| samplemap_and_ashfall.pdf   | Figure 3  | Figure   | Main         |
-| mean_posterior.pdf          | Figure 4  | Figure   | Main         |
-| hex_focus_plot.pdf          | Figure 5  | Figure   | Main         |
-| post_scatter_ashfall.pd     | Figure 6  | Figure   | Main         |
-| beta_posterior.pdf          | Figure 7  | Figure   | Main         |
-| posterior_r1.pdf            | Figure S1 | Figure   | ESM          |
-| posterior_r2.pdf            | Figure S2 | Figure   | ESM          |
-| decrease_probability.pdf    | Figure S3 | Figure   | ESM          |
-| posterior_eta.pdf           | Figure S4 | Figure   | ESM          |
-| posteriors_model_a.csv      | Table S1  | Table    | ESM          |
-| posteriors_model_b.csv      | Table S2  | Table    | ESM          |
+| **This repository**           | **Paper** | **Type** | **Location** |
+|-------------------------------|-----------|----------|--------------|
+| figure_chronology.pdf         | Figure 2  | Figure   | Main         |
+| samplemap_and_ashfall.pdf     | Figure 3  | Figure   | Main         |
+| mean_posterior.pdf            | Figure 4  | Figure   | Main         |
+| hex_focus_plot.pdf            | Figure 5  | Figure   | Main         |
+| post_scatter_ashfall.pd       | Figure 6  | Figure   | Main         |
+| beta_posterior.pdf            | Figure 7  | Figure   | ESM          |
+| samplemap_500_and_1000.pdf    | Figure S1 | Figure   | ESM          |
+| posterior_r1.pdf              | Figure S2 | Figure   | ESM          |
+| posterior_r1.pdf              | Figure S3 | Figure   | ESM          |
+| posterior_eta.pdf             | Figure S4 | Figure   | ESM          |
+| decrease_probability.pdf      | Figure S5 | Table    | ESM          |
+| mean_posterior_sensitivity.pdf| Figure S6 | Table    | ESM          |
+| waic.csv                      | Table S1  | Table    | ESM          |
+| waic.csv                      | Table S2  | Table    | ESM          |
+| posteriors_model_a.csv        | Table S3  | Table    | ESM          |
+| posteriors_model_b.csv        | Table S4  | Table    | ESM          |
+
 
 Please note that Figure 1 in the main text was a photograph, while Figure 2 was edited in Inkscape.
 
