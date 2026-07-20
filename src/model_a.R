@@ -133,6 +133,32 @@ run.a2.icar <- function(seed,d,code,constants,theta.init,nburnin,niter,thin)
 }
 
 
+run.a2.icar.sens <- function(seed,d,code,constants,theta.init,nburnin,niter,thin)
+{
+	library(nimbleCarbon)
+	library(truncnorm)
+	#Setup Init
+	inits  <- list()
+	inits$theta <- theta.init
+	inits$sigma1 <- runif(1,0,100)
+	inits$sigma2 <- runif(1,0,100)
+	inits$s1 <- rnorm(constants$n.hex,mean=0,sd=0.001)
+	inits$s2 <- rnorm(constants$n.hex,mean=0,sd=0.001)
+	inits$beta1 <- rnorm(1,0,0.0001)
+	inits$beta2 <- rnorm(1,0,0.0001)
+	inits$kappa <- rtruncnorm(1,0,3.21,2,0.1)
+
+	#MCMC
+	model <- nimbleModel(code,constants=constants,data=d,inits=inits)
+	cModel <- compileNimble(model)
+	conf <- configureMCMC(model,monitors=c('s1','s2','sigma1','sigma2','beta1','beta2','kappa'))
+	MCMC <- buildMCMC(conf)
+	cMCMC <- compileNimble(MCMC,project=cModel)
+	samples <- runMCMC(cMCMC,niter=niter,thin=thin,nburnin=nburnin,samplesAsCodaMCMC=T,setSeed=seed)
+	return(samples)
+}
+
+
 # ICAR model with ash as covariate
 icarmodel.a3  <- nimbleCode({
 	for (i in 1:N)

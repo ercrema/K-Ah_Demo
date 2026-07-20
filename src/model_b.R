@@ -129,6 +129,31 @@ run.b2.icar <- function(seed,d,code,constants,theta.init,nburnin,niter,thin)
 	return(samples)
 }
 
+run.b2.icar.sens <- function(seed,d,code,constants,theta.init,nburnin,niter,thin)
+{
+	library(nimbleCarbon)
+	library(truncnorm)
+	library(here)
+	source(here('src','dDoubleFlat.R'))
+	#Setup Init
+	inits  <- list()
+	inits$theta <- theta.init
+	inits$sigma1 <- runif(1,0,100)
+	inits$eta <- rnorm(constants$n.hex,mean=0,sd=0.001)
+	inits$beta1 <- rnorm(1,0,0.001)
+	inits$beta2 <- rnorm(1,0,0.001)
+	inits$kappa <- rtruncnorm(1,0,3.21,2,0.1)
+
+	#MCMC
+	model <- nimbleModel(code,constants=constants,data=d,inits=inits)
+	cModel <- compileNimble(model)
+	conf <- configureMCMC(model,monitors=c('eta','sigma1','beta1','beta2','kappa'))
+	MCMC <- buildMCMC(conf)
+	cMCMC <- compileNimble(MCMC,project=cModel)
+	samples <- runMCMC(cMCMC,niter=niter,thin=thin,nburnin=nburnin,samplesAsCodaMCMC=T,setSeed=seed)
+	return(samples)
+}
+
 icarmodel.b3  <- nimbleCode({
 	for (i in 1:N)
 	{

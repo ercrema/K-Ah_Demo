@@ -154,6 +154,14 @@ etakeys  <- eta.2.d750.matrix[,paste0('eta[',keys,']')]
 etakeys <- gather(etakeys)
 etakeys$hex <- key.letters[match(as.integer(sub(".*\\[(\\d+)\\].*", "\\1", etakeys$key)),keys)]
 
+# Quick look at keys
+keypost.a2 <- post.model.a2.d750$post[keys,]
+keypost.a2$keys <- key.letters
+keypost.b2 <- post.model.b2.d750$post[keys,]
+keypost.b2$keys <- key.letters
+print(keypost.a2)
+print(keypost.b2)
+
 # Map Figure Preparation ----
 
 # combine to plot grid
@@ -374,8 +382,8 @@ ggsave(here('figures_and_tables','posterior_eta_d750.pdf'),plot=etaplot,width=7,
 
 
 # Mean Posterior Sensitivity  ----
-rangeminmax.mean.a  <- range(c(post.model.a.i.d500$minmax.mean,post.model.a.i.d750$minmax.mean,post.model.a.i.d1000$minmax.mean))
-rangeminmax.mean.b  <- range(c(post.model.b.i.d500$minmax.mean,post.model.b.i.d750$minmax.mean,post.model.b.i.d1000$minmax.mean))
+rangeminmax.mean.a  <- range(c(post.model.a2.d500$minmax.mean,post.model.a2.d750$minmax.mean,post.model.a2.d1000$minmax.mean))
+rangeminmax.mean.b  <- range(c(post.model.b2.d500$minmax.mean,post.model.b2.d750$minmax.mean,post.model.b2.d1000$minmax.mean))
 r1plot.d500 <- ggplot(st_geometry(win)) +
 	geom_sf(fill='darkgrey',colour=NA) +
 	geom_sf(data=icar.a.hexgrid.d500,aes(fill=r1.p_mean),color='darkgrey') +
@@ -386,7 +394,7 @@ r1plot.d500 <- ggplot(st_geometry(win)) +
 	xlab('Longitude') +
 	ylab('Latitude') +
 	theme(legend.position='inside',legend.position.inside=c(0.3,0.6),plot.margin = margin(0, 0, 0, 0),legend.text=element_text(size=7),legend.title=element_text(size=8),legend.key.size=unit(0.2,'in'),legend.background=element_blank()) +
-	ggtitle('500yrs')
+	ggtitle('1000 yrs')
 r1plot.d750 <- ggplot(st_geometry(win)) +
 	geom_sf(fill='darkgrey',colour=NA) +
 	geom_sf(data=icar.a.hexgrid.d750,aes(fill=r1.p_mean),color='darkgrey') +
@@ -397,7 +405,7 @@ r1plot.d750 <- ggplot(st_geometry(win)) +
 	xlab('Longitude') +
 	ylab('Latitude') +
 	theme(legend.position='inside',legend.position.inside=c(0.3,0.6),plot.margin = margin(0, 0, 0, 0),legend.text=element_text(size=7),legend.title=element_text(size=8),legend.key.size=unit(0.2,'in'),legend.background=element_blank()) +
-	ggtitle('750yrs')
+	ggtitle('1500 yrs')
 r1plot.d1000 <- ggplot(st_geometry(win)) +
 	geom_sf(fill='darkgrey',colour=NA) +
 	geom_sf(data=icar.a.hexgrid.d1000,aes(fill=r1.p_mean),color='darkgrey') +
@@ -408,7 +416,7 @@ r1plot.d1000 <- ggplot(st_geometry(win)) +
 	xlab('Longitude') +
 	ylab('Latitude') +
 	theme(legend.position='inside',legend.position.inside=c(0.3,0.6),plot.margin = margin(0, 0, 0, 0),legend.text=element_text(size=7),legend.title=element_text(size=8),legend.key.size=unit(0.2,'in'),legend.background=element_blank()) +
-	ggtitle('1000yrs')
+	ggtitle('2000 yrs')
 
 r2plot.d500 <- ggplot(st_geometry(win)) +
 	geom_sf(fill='darkgrey',colour=NA) +
@@ -420,7 +428,7 @@ r2plot.d500 <- ggplot(st_geometry(win)) +
 	xlab('Longitude') +
 	ylab('Latitude') +
 	theme(legend.position='inside',legend.position.inside=c(0.3,0.6),plot.margin = margin(0, 0, 0, 0),legend.text=element_text(size=7),legend.title=element_text(size=8),legend.key.size=unit(0.2,'in'),legend.background=element_blank()) +
-	ggtitle('500yrs')
+	ggtitle('1000 yrs')
 r2plot.d750 <- ggplot(st_geometry(win)) +
 	geom_sf(fill='darkgrey',colour=NA) +
 	geom_sf(data=icar.a.hexgrid.d750,aes(fill=r2.p_mean),color='darkgrey') +
@@ -431,7 +439,7 @@ r2plot.d750 <- ggplot(st_geometry(win)) +
 	xlab('Longitude') +
 	ylab('Latitude') +
 	theme(legend.position='inside',legend.position.inside=c(0.3,0.6),plot.margin = margin(0, 0, 0, 0),legend.text=element_text(size=7),legend.title=element_text(size=8),legend.key.size=unit(0.2,'in'),legend.background=element_blank()) +
-	ggtitle('750yrs')
+	ggtitle('1500 yrs')
 r2plot.d1000 <- ggplot(st_geometry(win)) +
 	geom_sf(fill='darkgrey',colour=NA) +
 	geom_sf(data=icar.a.hexgrid.d1000,aes(fill=r2.p_mean),color='darkgrey') +
@@ -442,7 +450,7 @@ r2plot.d1000 <- ggplot(st_geometry(win)) +
 	xlab('Longitude') +
 	ylab('Latitude') +
 	theme(legend.position='inside',legend.position.inside=c(0.3,0.6),plot.margin = margin(0, 0, 0, 0),legend.text=element_text(size=7),legend.title=element_text(size=8),legend.key.size=unit(0.2,'in'),legend.background=element_blank()) +
-	ggtitle('1000yrs')
+	ggtitle('1000 yrs')
 
 etaplot.d500 <- ggplot(st_geometry(win)) +
 	geom_sf(fill='darkgrey',colour=NA) +

@@ -19,7 +19,7 @@ thin <- 100
 
 # Fit Models ---- 
 cl <- makeCluster(ncores)
-out.a2.500  <- parLapply(cl = cl, X = seeds, fun = run.a2.icar, code = icarmodel.a2, d = dat.icar.d500, constants = constants.icar.d500, theta.init = theta.init.icar.d500, niter = niter, nburnin = nburnin, thin = thin)  
+out.a2.500  <- parLapply(cl = cl, X = seeds, fun = run.a2.icar.sens, code = icarmodel.a2, d = dat.icar.d500, constants = constants.icar.d500, theta.init = theta.init.icar.d500, niter = niter, nburnin = nburnin, thin = thin)  
 stopCluster(cl)
 
 # Model Diagnostics ----
@@ -28,12 +28,7 @@ rhats.a2.500 <- coda::gelman.diag(coda::mcmc.list(out.a2.500))
 if(any(rhats.a2.500[[1]][,1]>1.01)){rhats.a2.500[[1]][which(rhats.a2.500[[1]][,1]>1.01),1]}
 #ess
 ess.a2.500 <- coda::effectiveSize(coda::mcmc.list(out.a2.500))
-#waic
-m.a2.500 <- nimbleModel(code=model.a2.500, data = dat.icar.d500, constants = constants.icar.d500)
-Cm.a2.500 <- compileNimble(m.a2.500)
-samples.a2.500 <- do.call(rbind.data.frame,out.a2.500)
-waic.a2.500 <- calculateWAIC(samples.a2.500,m.a2.500)
-posterior.a2.500 <- samples.a2.500[,!grepl('theta',colnames(samples.a2.500))]
+posterior.a2.500 <- do.call(rbind.data.frame,out.a2.500)
 
 # Save ----
-save(posterior.a2.500,rhats.a2.500,ess.a2.500,waic.a2.500,file=here('results','02a_fitmodel2_500_out.RData'))
+save(posterior.a2.500,rhats.a2.500,ess.a2.500,file=here('results','02a_fitmodel2_500_out.RData'))
