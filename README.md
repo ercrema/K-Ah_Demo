@@ -100,5 +100,6 @@ loaded via a namespace (and not attached):
 [76] mgcv_1.9-1             xfun_0.52              pkgconfig_2.0.3  
 ```
 ### Funding ###
-Funded by the Swedish Research Council (VR) project _Surviving the Apocalypse: multidimensional modeling of the impact of a prehistoric megadisaster on people’s lifeworlds, technologies and demography_ (Grant Code: 2024-00822).
+Funded by the Swedish Research Council (VR) project _Surviving the Apocalypse: multidimensional modeling of the impact of a prehistoric megadisaster on people’s lifeworlds, technologies and demography_ (Grant Code: 2024-00822), JSPS KAKENHI (Grant Numbers JP25K00523), and European Research Council Synergy project _FORAGER: Investigating alternative trajectories for human demographic growth in temperate northern Holocene societies (Grant Code: 101224035)
+
 
