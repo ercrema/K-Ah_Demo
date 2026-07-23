@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/956656775.svg)](https://doi.org/10.5281/zenodo.21507618)
+
 # R scripts for the paper 'Divergent Demographic Responses to the Kikai-Akahoya Volcanic Catastrophe in Mid-Holocene Japan'
 
 This repository contains data and scripts used in the following paper:
